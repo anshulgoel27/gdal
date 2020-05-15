@@ -23,6 +23,7 @@ SUBDIRS-$(HAVE_FREEXL)  += xls
 SUBDIRS-$(HAVE_SOSI)	+= sosi
 SUBDIRS-$(HAVE_MONGODB) += mongodb
 SUBDIRS-$(HAVE_MONGOCXXV3) += mongodbv3
+SUBDIRS-$(HAVE_EFAL) += EFAL
 
 default:	$(foreach d,$(SUBDIRS-yes),$(d)-target)
 

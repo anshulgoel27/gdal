@@ -83,6 +83,10 @@ ifeq ($(HAVE_SOSI),yes)
 CXXFLAGS :=	$(CXXFLAGS) -DSOSI_ENABLED
 endif
 
+ifeq ($(HAVE_EFAL),yes)
+CXXFLAGS :=	$(CXXFLAGS) -DEFAL_ENABLED
+endif
+
 ifeq ($(MDB_ENABLED),yes)
 CXXFLAGS :=	$(CXXFLAGS) -DMDB_ENABLED
 endif
