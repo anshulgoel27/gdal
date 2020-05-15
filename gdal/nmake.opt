@@ -625,6 +625,17 @@ OCI_INCLUDE =	-I$(ORACLE_HOME)\oci\include
 #SOSI_INC_DIR = e:/sosi
 #SOSI_LIBS = e:/sosi/FYBA.lib e:/sosi/GM.lib e:/sosi/UT.lib
 
+# Uncomment for EFAL support
+#
+# If "EFAL_PLUGIN = YES" is uncommented EFAL-support is built as a plugin 
+# and the plugin-.dll deployed in the gdalplugin directory.
+# If EFAL_ENABLED is uncommented it is build "normally" based on the external libs. 
+# The options EFAL_ENABLED and EFAL_PLUGIN are mutually exclusive. 
+# Uncommenting both will lead to build errors.
+#EFAL_PLUGIN = YES
+EFAL_ENABLED = YES
+
+
 # Uncomment for OpenJpeg (release v2.1 or later) support
 #OPENJPEG_ENABLED = YES
 # Note that, contrary to GDAL releases <= 2.2.X, this must point to the
