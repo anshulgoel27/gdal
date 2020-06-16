@@ -9,7 +9,7 @@ OBJ	=	from_mitab.o \
 		style_utility.o \
 		ogrgeopackageutility.o
 
-CPPFLAGS	:=	-I. -I.. -I../..  -I../generic  -I../gpkg  -I../../../gcore $(CPPFLAGS)
+CPPFLAGS	:= -fPIC -I. -I.. -I../..  -I../generic  -I../gpkg  -I../../../gcore $(CPPFLAGS)
 
 default:	$(O_OBJ:.o=.$(OBJ_EXT))
 
@@ -18,10 +18,10 @@ clean:
 
 $(O_OBJ):       MIDefs.h EFAL.h EFALAPI.h EFALErrorIDs.h EFALLIB.h from_mitab.h OGREFAL.h ogrgeopackageutility.h
 
-PLUGIN_SO	= ogr_EFAL.$(SO_EXT)
+PLUGIN_SO	= ogr_EFAL.so
 
 plugin:	 $(PLUGIN_SO)
 
 $(PLUGIN_SO):	$(OBJ)
-		$(LD_SHARED) $(LNK_FLAGS) $(OBJ) $(CONFIG_LIBS_INS) $(LIBS) \
+		gcc -shared $(LNK_FLAGS) $(OBJ) $(CONFIG_LIBS_INS) $(LIBS) \
 		-o $(PLUGIN_SO)
