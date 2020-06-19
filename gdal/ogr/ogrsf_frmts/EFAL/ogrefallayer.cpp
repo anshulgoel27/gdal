@@ -88,8 +88,9 @@ OGREFALLayer::OGREFALLayer(EFALHANDLE argSession, EFALHANDLE argTable, EfalOpenM
     const wchar_t * pwszFeatureClassName = efallib->GetTableName(hSession, hTable);
     char * pszFeatureClassName = CPLRecodeFromWChar(pwszFeatureClassName, CPL_ENC_UCS2, CPL_ENC_UTF8);
 
-    const wchar_t* pFileName = wcsdup(efallib->GetTablePath(hSession, hTable));
+    wchar_t* pFileName = wcsdup(efallib->GetTablePath(hSession, hTable));
     pszFileName = CPLRecodeFromWChar(pFileName, CPL_ENC_UCS2, CPL_ENC_UTF8);
+    free(pFileName);
     pswzFileName = CPLRecodeToWChar(pszFileName, CPL_ENC_UTF8, CPL_ENC_UCS2);
 
     poFeatureDefn = new OGRFeatureDefn(pszFeatureClassName);
@@ -281,27 +282,28 @@ void OGREFALLayer::SetSpatialRef(OGRSpatialReference *poSpatialRef)
 OGREFALLayer::~OGREFALLayer()
 {
     // we need to create the table as its not yet created.
-    // CreateNewTable();
+    CreateNewTable();
 
-    if ((hSession > 0) && (hTable > 0))
+    if (hSession > 0)
     {
-        if (pswzFileName != nullptr) {
+        // Now drop all of the variables
+        for (MI_UINT32 n = efallib->GetVariableCount(hSession); n > 0; n--)
+        {
+            efallib->DropVariable(hSession, efallib->GetVariableName(hSession, n - 1));
+        }
+
+        if (hPreparedInsertStmt != 0)
+        {
+            efallib->DisposeStmt(hSession, hPreparedInsertStmt);
+        }
+
+
+        if (pswzFileName != nullptr && hTable > 0) {
             if (efallib->GetTableHandleFromTablePath(hSession, pswzFileName) != (EFALHANDLE)nullptr)
             {
                 CloseSequentialCursor();
                 if (bNeedEndAccess)
                     efallib->EndAccess(hSession, hTable);
-
-                // Now drop all of the variables
-                for (MI_UINT32 n = efallib->GetVariableCount(hSession); n > 0; n--)
-                {
-                    efallib->DropVariable(hSession, efallib->GetVariableName(hSession, n - 1));
-                }
-
-                if (hPreparedInsertStmt != 0)
-                {
-                    efallib->DisposeStmt(hSession, hPreparedInsertStmt);
-                }
                 efallib->CloseTable(hSession, hTable);
             }
         }
@@ -321,6 +323,9 @@ OGREFALLayer::~OGREFALLayer()
     if (pszTableCSys != nullptr) {
         CPLFree(pszTableCSys);
     }
+    pswzFileName = 0;
+    pszFileName = 0;
+    pszTableCSys = 0;
     hSequentialCursor = 0;
     hPreparedInsertStmt = 0;
     hPreparedUpdateStmt = 0;
@@ -1002,6 +1007,150 @@ OGRErr OGREFALLayer::ISetFeature(OGRFeature *poFeature)
     }
     return err;
 }
+
+OGRErr OGREFALLayer::CreateInsertStatement(EFALHANDLE hMetadata)
+{
+    OGRErr status = OGRERR_NONE;
+
+    wchar_t * tableName = CPLRecodeToWChar(poFeatureDefn->GetName(), CPL_ENC_UTF8, CPL_ENC_UCS2);
+    std::wstring command = L"INSERT INTO \"" + std::wstring(tableName) + L"\" (";
+    CPLFree(tableName);
+
+    std::wstring values = L"";
+    bool first = true;
+
+    int n = poFeatureDefn->GetFieldCount();
+    if (n > 0) {
+        for (int i = 0; (i < n) && (status == OGRERR_NONE); i++)
+        {
+            OGRFieldDefn* pFieldDefn = poFeatureDefn->GetFieldDefn(i);
+            wchar_t * columnName = CPLRecodeToWChar(pFieldDefn->GetNameRef(), CPL_ENC_UTF8, CPL_ENC_UCS2); // TODO: Is UCS2 the right thing throughout here or is UTF16 better???
+            OGRFieldType ogrType = pFieldDefn->GetType();
+            MI_UINT32 columnWidth = 0;
+            MI_UINT32 columnDecimals = 0;
+            Ellis::ALLTYPE_TYPE columnType = Ellis::ALLTYPE_TYPE::OT_NONE;
+
+            switch (ogrType)
+            {
+            case OGRFieldType::OFTString:
+                columnType = Ellis::ALLTYPE_TYPE::OT_CHAR;
+                columnWidth = pFieldDefn->GetWidth();
+                break;
+            case OGRFieldType::OFTInteger:
+                columnType = Ellis::ALLTYPE_TYPE::OT_INTEGER;
+                break;
+            case OGRFieldType::OFTInteger64:
+                if (bCreateNativeX)
+                {
+                    columnType = Ellis::ALLTYPE_TYPE::OT_INTEGER64;
+                }
+                else
+                {
+                    columnType = Ellis::ALLTYPE_TYPE::OT_INTEGER;
+                }
+                break;
+            case OGRFieldType::OFTReal:
+                if (pFieldDefn->GetWidth() > 0)
+                {
+                    columnWidth = (MI_UINT32)pFieldDefn->GetWidth();
+                    columnDecimals = (MI_UINT32)pFieldDefn->GetPrecision();
+                    columnType = Ellis::ALLTYPE_TYPE::OT_DECIMAL;
+                }
+                else
+                {
+                    columnType = Ellis::ALLTYPE_TYPE::OT_FLOAT;
+                }
+                break;
+            case OGRFieldType::OFTDate:
+                columnType = Ellis::ALLTYPE_TYPE::OT_DATE;
+                break;
+            case OGRFieldType::OFTDateTime:
+                columnType = Ellis::ALLTYPE_TYPE::OT_DATETIME;
+                break;
+            case OGRFieldType::OFTTime:
+                columnType = Ellis::ALLTYPE_TYPE::OT_TIME;
+                break;
+
+            case OGRFieldType::OFTBinary: // unsupported
+            case OGRFieldType::OFTWideString: // deprecated
+            case OGRFieldType::OFTInteger64List: // unsupported
+            case OGRFieldType::OFTIntegerList: // unsupported
+            case OGRFieldType::OFTRealList: // unsupported
+            case OGRFieldType::OFTStringList: // unsupported
+            case OGRFieldType::OFTWideStringList: // deprecated
+                status = OGRERR_FAILURE;
+                CPLError(CE_Failure, CPLE_NotSupported,
+                    "Unsupported column type.");
+                break;
+            }
+            if (status == OGRERR_NONE)
+            {
+                if (hMetadata > 0) {
+                    efallib->AddColumn(hSession, hMetadata, columnName, columnType, false, columnWidth, columnDecimals, nullptr);
+                }
+
+                wchar_t warname[32];
+                swprintf(warname, sizeof(warname) / sizeof(wchar_t), L"@%d", i);
+                efallib->CreateVariable(hSession, warname);
+
+                if (!first) { command += L","; values += L","; } first = false;
+                command += columnName;
+                values += warname;
+            }
+            CPLFree(columnName);
+        }
+    }
+    else
+    {
+        // Add a single FID column.
+        if (hMetadata > 0) {
+            efallib->AddColumn(hSession, hMetadata, L"FID", Ellis::ALLTYPE_TYPE::OT_INTEGER, true, 0, 0, nullptr);
+        }
+    }
+    // Add Geometry and Style columns
+    if (poFeatureDefn->GetGeomFieldCount() > 0)
+    {
+        if (hMetadata > 0) {
+            const wchar_t * efalCSys = OGRSpatialRef2EFALCSys(GetSpatialRef());
+            efallib->AddColumn(hSession, hMetadata, L"OBJ", Ellis::ALLTYPE_TYPE::OT_OBJECT, false, 0, 0, efalCSys);
+        }
+        efallib->CreateVariable(hSession, L"@geom");
+        if (!first) { command += L","; values += L","; } first = false;
+        command += L"OBJ";
+        values += L"@geom";
+
+        if (hMetadata > 0) {
+            efallib->AddColumn(hSession, hMetadata, L"MI_STYLE", Ellis::ALLTYPE_TYPE::OT_STYLE, false, 0, 0, nullptr);
+        }
+        efallib->CreateVariable(hSession, L"@style");
+        if (!first) { command += L","; values += L","; } first = false;
+        command += L"MI_STYLE";
+        values += L"@style";
+
+        bHasMap = true;
+    }
+
+    command += L") VALUES (";
+    command += values;
+    command += L")";
+
+    if (status == OGRERR_NONE)
+    {
+        if (hMetadata > 0) {
+            hTable = efallib->CreateTable(hSession, hMetadata);
+        }
+
+        if (hTable > 0) {
+            hPreparedInsertStmt = efallib->Prepare(hSession, command.c_str());
+        }
+
+        if (hPreparedInsertStmt == 0) {
+            status = OGRERR_FAILURE;
+        }
+    }
+    return status;
+}
+
 /************************************************************************/
 /*                           CreateNewTable()                           */
 /************************************************************************/
@@ -1032,134 +1181,31 @@ OGRErr OGREFALLayer::CreateNewTable()
         {
             hMetadata = efallib->CreateNativeTableMetadata(hSession, tableName, tablePath, charset);
         }
-        int n = poFeatureDefn->GetFieldCount();
 
-        std::wstring command = L"INSERT INTO \"" + std::wstring(tableName) + L"\" (";
-        std::wstring values = L"";
-        bool first = true;
-
-        if (n > 0) {
-            for (int i = 0; (i < n) && (status == OGRERR_NONE); i++)
-            {
-                OGRFieldDefn* pFieldDefn = poFeatureDefn->GetFieldDefn(i);
-                wchar_t * columnName = CPLRecodeToWChar(pFieldDefn->GetNameRef(), CPL_ENC_UTF8, CPL_ENC_UCS2); // TODO: Is UCS2 the right thing throughout here or is UTF16 better???
-                OGRFieldType ogrType = pFieldDefn->GetType();
-                MI_UINT32 columnWidth = 0;
-                MI_UINT32 columnDecimals = 0;
-                Ellis::ALLTYPE_TYPE columnType = Ellis::ALLTYPE_TYPE::OT_NONE;
-
-                switch (ogrType)
-                {
-                case OGRFieldType::OFTString:
-                    columnType = Ellis::ALLTYPE_TYPE::OT_CHAR;
-                    columnWidth = pFieldDefn->GetWidth();
-                    break;
-                case OGRFieldType::OFTInteger:
-                    columnType = Ellis::ALLTYPE_TYPE::OT_INTEGER;
-                    break;
-                case OGRFieldType::OFTInteger64:
-                    if (bCreateNativeX)
-                    {
-                        columnType = Ellis::ALLTYPE_TYPE::OT_INTEGER64;
-                    }
-                    else
-                    {
-                        columnType = Ellis::ALLTYPE_TYPE::OT_INTEGER;
-                    }
-                    break;
-                case OGRFieldType::OFTReal:
-                    if (pFieldDefn->GetWidth() > 0)
-                    {
-                        columnWidth = (MI_UINT32)pFieldDefn->GetWidth();
-                        columnDecimals = (MI_UINT32)pFieldDefn->GetPrecision();
-                        columnType = Ellis::ALLTYPE_TYPE::OT_DECIMAL;
-                    }
-                    else
-                    {
-                        columnType = Ellis::ALLTYPE_TYPE::OT_FLOAT;
-                    }
-                    break;
-                case OGRFieldType::OFTDate:
-                    columnType = Ellis::ALLTYPE_TYPE::OT_DATE;
-                    break;
-                case OGRFieldType::OFTDateTime:
-                    columnType = Ellis::ALLTYPE_TYPE::OT_DATETIME;
-                    break;
-                case OGRFieldType::OFTTime:
-                    columnType = Ellis::ALLTYPE_TYPE::OT_TIME;
-                    break;
-
-                case OGRFieldType::OFTBinary: // unsupported
-                case OGRFieldType::OFTWideString: // deprecated
-                case OGRFieldType::OFTInteger64List: // unsupported
-                case OGRFieldType::OFTIntegerList: // unsupported
-                case OGRFieldType::OFTRealList: // unsupported
-                case OGRFieldType::OFTStringList: // unsupported
-                case OGRFieldType::OFTWideStringList: // deprecated
-                    status = OGRERR_FAILURE;
-                    CPLError(CE_Failure, CPLE_NotSupported,
-                        "Unsupported column type.");
-                    break;
-                }
-                if (status == OGRERR_NONE)
-                {
-                    efallib->AddColumn(hSession, hMetadata, columnName, columnType, false, columnWidth, columnDecimals, nullptr);
-
-                    wchar_t warname[32];
-                    swprintf(warname, sizeof(warname) / sizeof(wchar_t), L"@%d", i);
-                    efallib->CreateVariable(hSession, warname);
-
-                    if (!first) { command += L","; values += L","; } first = false;
-                    command += columnName;
-                    values += warname;
-                }
-                CPLFree(columnName);
-            }
-        }
-        else
-        {
-            // Add a single FID column.
-            efallib->AddColumn(hSession, hMetadata, L"FID", Ellis::ALLTYPE_TYPE::OT_INTEGER, true, 0, 0, nullptr);
-        }
-        // Add Geometry and Style columns
-        if (poFeatureDefn->GetGeomFieldCount() > 0)
-        {
-            const wchar_t * efalCSys = OGRSpatialRef2EFALCSys(GetSpatialRef());
-            efallib->AddColumn(hSession, hMetadata, L"OBJ", Ellis::ALLTYPE_TYPE::OT_OBJECT, false, 0, 0, efalCSys);
-            efallib->CreateVariable(hSession, L"@geom");
-            if (!first) { command += L","; values += L","; } first = false;
-            command += L"OBJ";
-            values += L"@geom";
-
-            efallib->AddColumn(hSession, hMetadata, L"MI_STYLE", Ellis::ALLTYPE_TYPE::OT_STYLE, false, 0, 0, nullptr);
-            efallib->CreateVariable(hSession, L"@style");
-            if (!first) { command += L","; values += L","; } first = false;
-            command += L"MI_STYLE";
-            values += L"@style";
-
-            bHasMap = true;
-        }
-
-        command += L") VALUES (";
-        command += values;
-        command += L")";
-
-        hTable = efallib->CreateTable(hSession, hMetadata);
-        efallib->DestroyTableMetadata(hSession, hMetadata);
-        if (hTable == 0)
-        {
-            // TODO: efallib->HaveErrors and error handling throughout is missing/poor
-            CPLError(CE_Failure, CPLE_NotSupported,
-                "Creation of new TAB file failed.");
-            status = OGRERR_FAILURE;
-        }
+        status = CreateInsertStatement(hMetadata);
         if (status == OGRERR_NONE)
         {
-            bNew = false;
-            hPreparedInsertStmt = efallib->Prepare(hSession, command.c_str());
-            bNeedEndAccess = efallib->BeginWriteAccess(hSession, hTable);
+            
+            efallib->DestroyTableMetadata(hSession, hMetadata);
+            if (hTable == 0)
+            {
+                // TODO: efallib->HaveErrors and error handling throughout is missing/poor
+                CPLError(CE_Failure, CPLE_NotSupported,
+                    "Creation of new TAB file failed.");
+                status = OGRERR_FAILURE;
+            }
+            if (status == OGRERR_NONE)
+            {
+                bNew = false;
+                bNeedEndAccess = efallib->BeginWriteAccess(hSession, hTable);
+            }
         }
         CPLFree(tableName);
+    }
+
+    if (hPreparedInsertStmt == 0 && hTable > 0)
+    {
+        status = CreateInsertStatement();
     }
     return status;
 }

@@ -86,6 +86,7 @@ private:
     static void          OGRGeometry2EFALGeometry(OGRGeometry*, GByte** pbytes, size_t* psz);
     static bool          ExtractBoundsFromCSysString(const char * pszCoordSys, double &dXMin, double &dYMin, double &dXMax, double &dYMax);
     static CPLString     MapBasicStyle2OGRStyle(const wchar_t * mbStyle);
+    OGRErr               CreateInsertStatement(EFALHANDLE hMetadata = 0);
 
 public:
     OGREFALLayer(EFALHANDLE hSession, EFALHANDLE hTable, EfalOpenMode eEfalOpenMode);
