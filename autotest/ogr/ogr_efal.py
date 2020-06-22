@@ -416,7 +416,7 @@ def test_ogr_efal_13():
         pytest.skip()
 
 
-    arabic_ds = ogr.Open('data/efal/STATES_arabic.tab')
+    arabic_ds = ogr.Open('data/efal/STATES_arabic.TAB')
     assert arabic_ds is not None
 
     arabic_lr = arabic_ds.GetLayer(0)
@@ -452,7 +452,7 @@ def test_ogr_efal_14():
         pytest.skip()
 
 
-    utf8_ds = ogr.Open('data/efal/STATES_utf8.tab')
+    utf8_ds = ogr.Open('data/efal/STATES_utf8.TAB')
     assert utf8_ds is not None
 
     utf8_lr = utf8_ds.GetLayer(0)
@@ -489,7 +489,7 @@ def test_ogr_efal_15():
         pytest.skip()
 
 
-    utf16_ds = ogr.Open('data/efal/STATES_utf16.tab')
+    utf16_ds = ogr.Open('data/efal/STATES_utf16.TAB')
     assert utf16_ds is not None
 
     utf16_lr = utf16_ds.GetLayer(0)
