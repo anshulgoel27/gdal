@@ -1,5 +1,5 @@
 /*****************************************************************************
-* Copyright 2016 Pitney Bowes Inc.
+* Copyright 2020 Precisely.
 *
 * Licensed under the MIT License (the “License”); you may not use this file
 * except in the compliance with the License.
@@ -12,23 +12,9 @@
 * limitations under the License.
 *****************************************************************************/
 
-#include "cpl_port.h"
-
-#include <cerrno>
-#include <cstring>
 #include <map>
-#include <string>
-#include <utility>
-
-#include "cpl_conv.h"
-#include "cpl_error.h"
-#include "cpl_multiproc.h"
-#include "cpl_string.h"
-#include "cpl_vsi.h"
-#include "gdal.h"
-#include "gdal_priv.h"
-
 #include "OGREFAL.h"
+
 
 CPL_CVSID("$Id: OGREFALdriver.cpp 38032 2017-04-16 08:26:01Z rouault $");
 
@@ -196,104 +182,70 @@ void RegisterOGREFAL()
     poDriver->SetMetadataItem(GDAL_DMD_HELPTOPIC, "drv_efal.html");
     poDriver->SetMetadataItem(GDAL_DMD_EXTENSIONS, "tab");
     // GDAL_DMD_CONNECTION_PREFIX
-    poDriver->SetMetadataItem(GDAL_DMD_CREATIONOPTIONLIST,
-        "<CreationOptionList>"
-        "  <Option name='FORMAT' type='string-select' description='type of MapInfo format'>"
-        "    <Value>NATIVE</Value>"
-        "    <Value>NATIVEX</Value>"
-        "  </Option>"
-        "  <Option name='CHARSET' type='string-select' description='type of character encoding to use for new tables. The default is NEUTRAL for Native and UTF8 for NativeX'>"
-        "    <Value>NATIVE</Value>"
-        "    <Value>ISO8859_1</Value>"
-        "    <Value>ISO8859_2</Value>"
-        "    <Value>ISO8859_3</Value>"
-        "    <Value>ISO8859_4</Value>"
-        "    <Value>ISO8859_5</Value>"
-        "    <Value>ISO8859_6</Value>"
-        "    <Value>ISO8859_7</Value>"
-        "    <Value>ISO8859_8</Value>"
-        "    <Value>ISO8859_9</Value>"
-        "    <Value>WLATIN1</Value>"
-        "    <Value>WLATIN2</Value>"
-        "    <Value>WARABIC</Value>"
-        "    <Value>WCYRILLIC</Value>"
-        "    <Value>WGREEK</Value>"
-        "    <Value>WHEBREW</Value>"
-        "    <Value>WTURKISH</Value>"
-        "    <Value>WTCHINESE</Value>"
-        "    <Value>WSCHINESE</Value>"
-        "    <Value>WJAPANESE</Value>"
-        "    <Value>WKOREAN</Value>"
-#if 0    // Not supported in EFAL
-        "    <Value>MROMAN</Value>"
-        "    <Value>MARABIC</Value>"
-        "    <Value>MGREEK</Value>"
-        "    <Value>MHEBREW</Value>"
-        "    <Value>MCENTEURO</Value>"
-        "    <Value>MCROATIAN</Value>"
-        "    <Value>MCYRILLIC</Value>"
-        "    <Value>MICELANDIC</Value>"
-        "    <Value>MTHAI</Value>"
-        "    <Value>MTURKISH</Value>"
-        "    <Value>MTCHINESE</Value>"
-        "    <Value>MJAPANESE</Value>"
-        "    <Value>MKOREAN</Value>"
-#endif
-        "    <Value>CP437</Value>"
-        "    <Value>CP850</Value>"
-        "    <Value>CP852</Value>"
-        "    <Value>CP857</Value>"
-        "    <Value>CP860</Value>"
-        "    <Value>CP861</Value>"
-        "    <Value>CP863</Value>"
-        "    <Value>CP865</Value>"
-        "    <Value>CP855</Value>"
-        "    <Value>CP864</Value>"
-        "    <Value>CP869</Value>"
-#if 0    // Not supported in EFAL
-        "    <Value>LICS</Value>"
-        "    <Value>LMBCS</Value>"
-        "    <Value>LMBCS1</Value>"
-        "    <Value>LMBCS2</Value>"
-        "    <Value>MSCHINESE</Value>"
-        "    <Value>UTCHINESE</Value>"
-        "    <Value>USCHINESE</Value>"
-        "    <Value>UJAPANESE</Value>"
-        "    <Value>UKOREAN</Value>"
-#endif
-        "    <Value>WTHAI</Value>"
-        "    <Value>WBALTICRIM</Value>"
-        "    <Value>WVIETNAMESE</Value>"
-        "    <Value>UTF8</Value>"
-        "    <Value>UTF16</Value>"
-        "  </Option>"
-        "  <Option name='BLOCKSIZE' type='int' description='.map block size' min='512' max='32256' default='16384'/>"
-        "</CreationOptionList>");
+     poDriver->SetMetadataItem(GDAL_DMD_CREATIONOPTIONLIST,
+         "<CreationOptionList>"
+         "  <Option name='FORMAT' type='string-select' description='type of MapInfo format'>"
+         "    <Value>NATIVE</Value>"
+         "    <Value>NATIVEX</Value>"
+         "  </Option>"
+         "  <Option name='CHARSET' type='string-select' description='type of character encoding to use for new tables. The default is NEUTRAL for Native and UTF8 for NativeX'>"
+         "    <Value>NATIVE</Value>"
+         "    <Value>ISO8859_1</Value>"
+         "    <Value>ISO8859_2</Value>"
+         "    <Value>ISO8859_3</Value>"
+         "    <Value>ISO8859_4</Value>"
+         "    <Value>ISO8859_5</Value>"
+         "    <Value>ISO8859_6</Value>"
+         "    <Value>ISO8859_7</Value>"
+         "    <Value>ISO8859_8</Value>"
+         "    <Value>ISO8859_9</Value>"
+         "    <Value>WLATIN1</Value>"
+         "    <Value>WLATIN2</Value>"
+         "    <Value>WARABIC</Value>"
+         "    <Value>WCYRILLIC</Value>"
+         "    <Value>WGREEK</Value>"
+         "    <Value>WHEBREW</Value>"
+         "    <Value>WTURKISH</Value>"
+         "    <Value>WTCHINESE</Value>"
+         "    <Value>WSCHINESE</Value>"
+         "    <Value>WJAPANESE</Value>"
+         "    <Value>WKOREAN</Value>"
+         "    <Value>CP437</Value>"
+         "    <Value>CP850</Value>"
+         "    <Value>CP852</Value>"
+         "    <Value>CP857</Value>"
+         "    <Value>CP860</Value>"
+         "    <Value>CP861</Value>"
+         "    <Value>CP863</Value>"
+         "    <Value>CP865</Value>"
+         "    <Value>CP855</Value>"
+         "    <Value>CP864</Value>"
+         "    <Value>CP869</Value>"
+         "    <Value>WTHAI</Value>"
+         "    <Value>WBALTICRIM</Value>"
+         "    <Value>WVIETNAMESE</Value>"
+         "    <Value>UTF8</Value>"
+         "    <Value>UTF16</Value>"
+         "  </Option>"
+         "  <Option name='BLOCKSIZE' type='int' description='.map block size' min='512' max='32256' default='16384'/>"
+         "</CreationOptionList>");
     // GDAL_DMD_OPENOPTIONLIST 
-    poDriver->SetMetadataItem(GDAL_DMD_OPENOPTIONLIST,
-        "<OpenOptionList>"
-        "  <Option name='MODE' type='string' description='Open mode. "
-        "READ-ONLY - open for read-only, "
-        "LOCK-READ - open for read-only with files locked open (which will improve read performance but prevent writes from other threads/applications), "
-        "READ-WRITE - open for read and write, "
-        "LOCK-WRITE - open for read and write with the files locked for writing."
-        "' default='READ-WRITE'/>"
-        "</OpenOptionList>");
+     poDriver->SetMetadataItem(GDAL_DMD_OPENOPTIONLIST,
+         "<OpenOptionList>"
+         "  <Option name='MODE' type='string' description='Open mode. "
+         "READ-ONLY - open for read-only, "
+         "LOCK-READ - open for read-only with files locked open (which will improve read performance but prevent writes from other threads/applications), "
+         "READ-WRITE - open for read and write, "
+         "LOCK-WRITE - open for read and write with the files locked for writing."
+         "'default='READ-WRITE'/>"
+         "</OpenOptionList>");
     poDriver->SetMetadataItem(GDAL_DMD_CREATIONFIELDDATATYPES,
         "Integer Integer64 Real String Date DateTime Time");
-    poDriver->SetMetadataItem(GDAL_DS_LAYER_CREATIONOPTIONLIST,
-        "<LayerCreationOptionList>"
-        "  <Option name='BOUNDS' type='string' description='Custom bounds. Expected format is xmin,ymin,xmax,ymax'/>"
-        "</LayerCreationOptionList>");
-    // GDAL_DMD_CREATIONFIELDDATASUBTYPES
-    // GDAL_DCAP_OPEN 
-    // GDAL_DCAP_CREATE
-    // GDAL_DCAP_CREATECOPY 
-    // GDAL_DCAP_VIRTUALIO
+     poDriver->SetMetadataItem(GDAL_DS_LAYER_CREATIONOPTIONLIST,
+         "<LayerCreationOptionList>"
+         "  <Option name='BOUNDS' type='string' description='Custom bounds. Expected format is xmin,ymin,xmax,ymax'/>"
+         "</LayerCreationOptionList>");
     poDriver->SetMetadataItem(GDAL_DCAP_VECTOR, "YES");
-    // GDAL_DCAP_GNM
-    // GDAL_DCAP_NONSPATIAL
-    // GDAL_DCAP_FEATURE_STYLES 
 
 
     poDriver->pfnOpen = OGREFALDriverOpen;
