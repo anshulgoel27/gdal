@@ -14,6 +14,7 @@
 
 
 #include <string>
+#include <algorithm>
 #if HAVE_FCNTL_H
 #  include <fcntl.h>
 #endif
