@@ -1,11 +1,15 @@
 /*****************************************************************************
-*       Copyright � 2015, Pitney Bowes Software Inc.
+*       Copyright 1999, 2020 Precisely.
 *       All rights reserved.
-*       Confidential Property of Pitney Bowes Software Inc.
 *
-* $Author: ro011fo $
-* $Revision: 7204 $
-* $Date: 2019-01-17 02:11:07 +0530 (Thu, 17 Jan 2019) $
+*       This document contains unpublished, confidential, and proprietary
+*       information of Precisely. No disclosure or use of any portion of
+*       the contents of this document may be made without the express 
+*       written consent of Precisely.
+*
+* $Author: an032go $
+* $Revision: 7568 $
+* $Date: 2020-04-30 09:35:46 -0400 (Thu, 30 Apr 2020) $
 *
 * Module Description:
 *   This file contains all of the "global" typedefs and defines
@@ -13,7 +17,7 @@
 *   should be contained within this file.  Modifying this file will cause a
 *   rebuild of the entire codebase.
 *
-* $HeadURL: http://noisvnmsprod.pbi.global.pvt/svn/platform.net/trunk/MapInfo.Net/Include/dev/MIDefs.h $
+* $HeadURL: http://dbysvnmsprod.pbi.global.pvt/svn/platform.net/trunk/MapInfo.Net/Include/dev/MIDefs.h $
 *****************************************************************************/
 #ifndef MIDEFS_H
 #define MIDEFS_H

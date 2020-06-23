@@ -1,5 +1,5 @@
 /*****************************************************************************
-* Copyright 2016 Pitney Bowes Inc.
+* Copyright 2020 Precisely.
 *
 * Licensed under the MIT License (the “License”); you may not use this file
 * except in the compliance with the License.
@@ -13,41 +13,15 @@
 *****************************************************************************/
 
 
-#include "cpl_port.h"
-#include "OGREFAL.h"
-#include "ogrgeopackageutility.h"
-
-#include <cerrno>
-#include <climits>
-#include <cstddef>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <string>
 #if HAVE_FCNTL_H
 #  include <fcntl.h>
 #endif
-#include <algorithm>
-#include <string>
-#include <vector>
-
-#include "cpl_conv.h"
-#include "cpl_csv.h"
-#include "cpl_error.h"
-#include "cpl_string.h"
-#include "cpl_vsi.h"
-#include "ogr_api.h"
-#include "ogr_core.h"
-#include "ogr_feature.h"
-#include "ogr_geometry.h"
-#include "ogr_p.h"
-#include "ogr_spatialref.h"
-#include "ogrsf_frmts.h"
+#include "OGREFAL.h"
+#include "ogrgeopackageutility.h"
 #include "from_mitab.h"
 
 CPL_CVSID("$Id: OGREFALLayer.cpp 37371 2017-02-13 11:41:59Z rouault $");
-
-#include <ctime>
-#include <chrono>
 
 extern void OGREFALReleaseSession(EFALHANDLE hSession);
 extern EFALHANDLE OGREFALGetSession(GUIntBig);
@@ -323,9 +297,9 @@ OGREFALLayer::~OGREFALLayer()
     if (pszTableCSys != nullptr) {
         CPLFree(pszTableCSys);
     }
-    pswzFileName = 0;
-    pszFileName = 0;
-    pszTableCSys = 0;
+    pswzFileName = nullptr;
+    pszFileName = nullptr;
+    pszTableCSys = nullptr;
     hSequentialCursor = 0;
     hPreparedInsertStmt = 0;
     hPreparedUpdateStmt = 0;

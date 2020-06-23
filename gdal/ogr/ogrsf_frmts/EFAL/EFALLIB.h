@@ -1,7 +1,11 @@
 /*****************************************************************************
-*       Copyright (c) 1989-2015, Pitney Bowes Software
+*       Copyright 1999, 2020 Precisely.
 *       All  rights reserved.
-*       Confidential Property of Pitney Bowes Software
+*
+*       This document contains unpublished, confidential, and proprietary
+*       information of Precisely. No disclosure or use of any portion of
+*       the contents of this document may be made without the express 
+*       written consent of Precisely.
  *
 * $Workfile:  $
 * $Revision:  $

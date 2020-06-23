@@ -1,5 +1,5 @@
 /*****************************************************************************
-* Copyright 2016 Pitney Bowes Inc.
+* Copyright 2020 Precisely.
 *
 * Licensed under the MIT License (the “License”); you may not use this file
 * except in the compliance with the License.
@@ -12,26 +12,7 @@
 * limitations under the License.
 *****************************************************************************/
 
-
-#include "cpl_port.h"
 #include "OGREFAL.h"
-
-#include <cerrno>
-#include <cstring>
-#include <string>
-
-#include "cpl_csv.h"
-#include "cpl_conv.h"
-#include "cpl_error.h"
-#include "cpl_string.h"
-#include "cpl_vsi.h"
-#include "cpl_vsi_virtual.h"
-#include "ogr_core.h"
-#include "ogr_feature.h"
-#include "ogr_geometry.h"
-#include "ogr_spatialref.h"
-#include "ogreditablelayer.h"
-#include "ogrsf_frmts.h"
 #include "from_mitab.h"
 
 CPL_CVSID("$Id: ogrcsvdatasource.cpp 37367 2017-02-13 05:32:41Z goatbar $");
