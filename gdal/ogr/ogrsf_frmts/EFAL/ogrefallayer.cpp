@@ -1147,16 +1147,16 @@ OGRErr OGREFALLayer::CreateNewTable()
         if (bCreateNativeX)
         {
             hMetadata = efallib->CreateNativeXTableMetadata(hSession, tableName, tablePath, charset);
-
-            wchar_t szBlockSize[32];
-            swprintf(szBlockSize, sizeof(szBlockSize) / sizeof(wchar_t), L"%d", nBlockSize);
-            efallib->SetMetadata(hSession, hMetadata, L"\blockSizeMapFile", szBlockSize);
         }
         else
         {
             hMetadata = efallib->CreateNativeTableMetadata(hSession, tableName, tablePath, charset);
         }
 
+		wchar_t szBlockSize[32];
+        swprintf(szBlockSize, sizeof(szBlockSize) / sizeof(wchar_t), L"%d", nBlockSize);
+        efallib->SetMetadata(hSession, hMetadata, L"\\blockSizeMapFile", szBlockSize);
+		
         status = CreateInsertStatement(hMetadata);
         if (status == OGRERR_NONE)
         {

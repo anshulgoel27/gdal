@@ -27,6 +27,8 @@
 #include "EFAL.h"
 #include "EFALLIB.h"
 
+extern "C" void CPL_DLL RegisterOGREFAL();
+
 class OGREFALDataSource;
 
 enum EfalOpenMode
