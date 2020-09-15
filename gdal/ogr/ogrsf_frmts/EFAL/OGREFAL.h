@@ -52,6 +52,7 @@ class OGREFALLayer : public OGRLayer
     EFALHANDLE          hSequentialCursor;
     EFALHANDLE          hPreparedInsertStmt;
     EFALHANDLE          hPreparedUpdateStmt;
+    EFALHANDLE          hTableCSys;
     OGRFeatureDefn     *poFeatureDefn;
     char*               pszTableCSys;
     bool                bHasFieldNames;
@@ -73,6 +74,7 @@ class OGREFALLayer : public OGRLayer
     bool                bHasMap;
     OGRSpatialReference* pSpatialReference;
     bool                bVariablesCreated;
+    bool                bFinishGeometry;
 
 private:
     void                 BuildQuery(wchar_t * szQuery, size_t sz, bool count) const;
@@ -92,7 +94,7 @@ private:
 
 public:
     OGREFALLayer(EFALHANDLE hSession, EFALHANDLE hTable, EfalOpenMode eEfalOpenMode);
-    OGREFALLayer(EFALHANDLE hSession, const char *pszName, const char *pszFilename, bool bNativeX, int BlockSize, Ellis::MICHARSET eCharset);
+    OGREFALLayer(EFALHANDLE hSession, const char *pszName, const char *pszFilename, bool bNativeX, int BlockSize, Ellis::MICHARSET eCharset, bool bFinishGeo);
     virtual ~OGREFALLayer();
 
     const char*          GetFilename() const { return pszFileName; }
@@ -254,6 +256,7 @@ class OGREFALDataSource : public GDALDataset
     bool                bCreateNativeX;
     Ellis::MICHARSET    charset;
     int                 nBlockSize;
+    bool                bFinishGeometry;
 
 public:
     OGREFALDataSource();

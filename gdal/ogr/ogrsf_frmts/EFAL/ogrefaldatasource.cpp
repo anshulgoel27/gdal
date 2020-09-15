@@ -33,9 +33,10 @@ OGREFALDataSource::OGREFALDataSource() :
     efalOpenMode(EfalOpenMode::EFAL_READ_WRITE),
     bSingleFile(FALSE),
     bSingleLayerAlreadyCreated(FALSE),
-    bCreateNativeX(false),
+    bCreateNativeX(true),
     charset(Ellis::MICHARSET::CHARSET_WLATIN1),
-    nBlockSize(16384)
+    nBlockSize(16384),
+    bFinishGeometry(true)
 {
 }
 
@@ -342,7 +343,7 @@ OGREFALDataSource::ICreateLayer(const char *pszLayerName,
         }
 
         pszFullFilename = CPLStrdup(CPLFormFilename(pszDirectory, pszLayerName, "tab"));
-        poLayer = new OGREFALLayer(hSession, pszLayerName, pszFullFilename, bCreateNativeX, nBlockSize, charset);
+        poLayer = new OGREFALLayer(hSession, pszLayerName, pszFullFilename, bCreateNativeX, nBlockSize, charset, bFinishGeometry);
 
         nLayers++;
         papoLayers = static_cast<OGRLayer **>(
@@ -393,8 +394,8 @@ int OGREFALDataSource::Create(const char *pszFileName, char ** papszOptions)
     pszName = CPLStrdup(pszFileName);
 
     const char *pszOpt = CSLFetchNameValue(papszOptions, "FORMAT");
-    if (pszOpt != nullptr && EQUAL(pszOpt, "NATIVEX")) {
-        bCreateNativeX = TRUE;
+    if (pszOpt != nullptr && EQUAL(pszOpt, "NATIVE")) {
+        bCreateNativeX = false;
         charset = Ellis::MICHARSET::CHARSET_UTF8;
     }
 
@@ -471,6 +472,11 @@ int OGREFALDataSource::Create(const char *pszFileName, char ** papszOptions)
     if (nBlockSize > 32768) nBlockSize = 32768;
     if (nBlockSize < 512) nBlockSize = 512;
 
+    pszOpt = CSLFetchNameValue(papszOptions, "FINISH_GEOMETRY");
+    if (pszOpt != nullptr) {
+        if (EQUAL(pszOpt, "NO")) bFinishGeometry = false;
+    }
+
     bUpdate = TRUE;
     efalOpenMode = EfalOpenMode::EFAL_LOCK_WRITE;
 
@@ -543,7 +549,7 @@ int OGREFALDataSource::Create(const char *pszFileName, char ** papszOptions)
 
         // member variable pszName should be the layer name (alias) and argument pszFileName should be the TAB filename 
         char * pszLayerName = EFAL_GDAL_DRIVER::TABGetBasename(pszFileName);
-        OGREFALLayer *poLayer = new OGREFALLayer(hSession, pszLayerName, pszFileName, bCreateNativeX, nBlockSize, charset);
+        OGREFALLayer *poLayer = new OGREFALLayer(hSession, pszLayerName, pszFileName, bCreateNativeX, nBlockSize, charset, bFinishGeometry);
         CPLFree(pszLayerName);
 
         nLayers = 1;

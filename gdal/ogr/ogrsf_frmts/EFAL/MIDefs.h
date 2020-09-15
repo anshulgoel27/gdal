@@ -9,7 +9,7 @@
 *
 * $Author: an032go $
 * $Revision: 7568 $
-* $Date: 2020-04-30 09:35:46 -0400 (Thu, 30 Apr 2020) $
+* $Date: 2020-04-30 19:05:46 +0530 (Thu, 30 Apr 2020) $
 *
 * Module Description:
 *   This file contains all of the "global" typedefs and defines
@@ -17,7 +17,7 @@
 *   should be contained within this file.  Modifying this file will cause a
 *   rebuild of the entire codebase.
 *
-* $HeadURL: http://dbysvnmsprod.pbi.global.pvt/svn/platform.net/trunk/MapInfo.Net/Include/dev/MIDefs.h $
+* $HeadURL: http://noisvnmsprod.pbi.global.pvt/svn/platform.net/trunk/MapInfo.Net/Include/dev/MIDefs.h $
 *****************************************************************************/
 #ifndef MIDEFS_H
 #define MIDEFS_H

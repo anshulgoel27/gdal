@@ -228,6 +228,10 @@ void RegisterOGREFAL()
          "    <Value>UTF16</Value>"
          "  </Option>"
          "  <Option name='BLOCKSIZE' type='int' description='.map block size' min='512' max='32256' default='16384'/>"
+         "  <Option name='FINISH_GEOMETRY' type='string-select' description='Finish the geometry or not.' default='YES'>"
+         "    <Value>NO</Value>"
+         "    <Value>YES</Value>"
+         "  </Option>"
          "</CreationOptionList>");
     // GDAL_DMD_OPENOPTIONLIST 
      poDriver->SetMetadataItem(GDAL_DMD_OPENOPTIONLIST,

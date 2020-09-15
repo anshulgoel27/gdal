@@ -4,7 +4,7 @@
 *
 *       This document contains unpublished, confidential, and proprietary
 *       information of Precisely. No disclosure or use of any portion of
-*       the contents of this document may be made without the express 
+*       the contents of this document may be made without the express
 *       written consent of Precisely.
  *
 * $Workfile:  $
@@ -55,10 +55,12 @@ private:
 	typedef const wchar_t *(__cdecl *CoordSys2MBStringProc)(EFALHANDLE hSession, const wchar_t * csys);
 	typedef const wchar_t *(__cdecl *PRJ2CoordSysStringProc)(EFALHANDLE hSession, const wchar_t * csys);
 	typedef const wchar_t *(__cdecl *MB2CoordSysStringProc)(EFALHANDLE hSession, const wchar_t * csys);
+	typedef EFALHANDLE(__cdecl *CoordSysStringToHandleProc)(EFALHANDLE hSession, const wchar_t * csys);
 	typedef bool(__cdecl *RegisterOGCWKTCoordSysCallbacksProc)(EFALHANDLE hSession, CoordSys_PRJ2OGCWKT_Callback coordSys_PRJ2OGCWKT_Callback, CoordSys_OGCWKT2PRJ_Callback coordSys_OGCWKT2PRJ_Callback);
 	typedef bool(__cdecl *IsValidCoordSysProc)(EFALHANDLE hSession, const wchar_t * csys);
 	typedef EFALHANDLE(__cdecl *CreateCoordinateTransformProc)(EFALHANDLE hSession, const wchar_t * csysSource, const wchar_t * csysDest);
 	typedef void(__cdecl *DestroyCoordinateTransformProc)(EFALHANDLE hSession, EFALHANDLE hCoordinateTransform);
+	typedef void(__cdecl *DestroyCoordSysProc)(EFALHANDLE hSession, EFALHANDLE hCoordSys);
 	typedef Ellis::DPNT(__cdecl *TransformCoordinateProc)(EFALHANDLE hSession, EFALHANDLE hCoordinateTransform, Ellis::DPNT src);
 	typedef void(__cdecl *TransformCoordinatesProc)(EFALHANDLE hSession, EFALHANDLE hCoordinateTransform, Ellis::DPNT * src, Ellis::DPNT * dst, MI_UINT32 nPnts);
 	typedef Ellis::DRECT(__cdecl *TransformRectProc)(EFALHANDLE hSession, EFALHANDLE hCoordinateTransform, Ellis::DRECT src);
@@ -71,8 +73,12 @@ private:
 	typedef Ellis::DPNT(__cdecl *GetFirstPointVariableProc)(EFALHANDLE hSession, const wchar_t * varname, const wchar_t * szCSys);
 	typedef Ellis::DPNT(__cdecl *GetLastPointVariableProc)(EFALHANDLE hSession, const wchar_t * varname, const wchar_t * szCSys);
 	typedef Ellis::DPNT(__cdecl *PointAtDistanceVariableProc)(EFALHANDLE hSession, const wchar_t * varname, const wchar_t * szCSys, double dDistFromBeginning, Ellis::MIUNIT unit, Ellis::DIST_CALC_TYPE calculationType);
+	typedef Ellis::DPNT(__cdecl *GetFirstPointVariableProc2)(EFALHANDLE hSession, const wchar_t * varname, EFALHANDLE hCSys);
+	typedef Ellis::DPNT(__cdecl *GetLastPointVariableProc2)(EFALHANDLE hSession, const wchar_t * varname, EFALHANDLE hCSys);
+	typedef Ellis::DPNT(__cdecl *PointAtDistanceVariableProc2)(EFALHANDLE hSession, const wchar_t * varname, EFALHANDLE hCSys, double dDistFromBeginning, Ellis::MIUNIT unit, Ellis::DIST_CALC_TYPE calculationType);
 	typedef bool(__cdecl *BufferVariableProc)(EFALHANDLE hSession, const wchar_t * srcvarname, double distance, Ellis::MIUNIT unit, Ellis::DIST_CALC_TYPE calculationType, MI_UINT32 resolution, const wchar_t * dstvarname);
 	typedef bool(__cdecl *TransformVariableProc)(EFALHANDLE hSession, const wchar_t * srcvarname, const wchar_t * dstvarname, const wchar_t * dstcsys);
+	typedef bool(__cdecl *TransformVariableProc2)(EFALHANDLE hSession, const wchar_t * srcvarname, const wchar_t * dstvarname, EFALHANDLE hDestCSys);
 	typedef bool(__cdecl *UnionVariableProc)(EFALHANDLE hSession, const wchar_t * srcvarname1, const wchar_t * srcvarname2, const wchar_t * dstvarname);
 	typedef bool(__cdecl *ConvexHullVariableProc)(EFALHANDLE hSession, const wchar_t * srcvarname, const wchar_t * dstvarname);
 	typedef bool(__cdecl *IntersectVariableProc)(EFALHANDLE hSession, const wchar_t * srcvarname1, const wchar_t * srcvarname2, const wchar_t * dstvarname);
@@ -87,8 +93,12 @@ private:
 	typedef Ellis::DPNT(__cdecl *GetFirstPointCursorProc)(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, const wchar_t * szCSys);
 	typedef Ellis::DPNT(__cdecl *GetLastPointCursorProc)(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, const wchar_t * szCSys);
 	typedef Ellis::DPNT(__cdecl *PointAtDistanceCursorProc)(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, const wchar_t * szCSys, double dDistFromBeginning, Ellis::MIUNIT unit, Ellis::DIST_CALC_TYPE calculationType);
+	typedef Ellis::DPNT(__cdecl *GetFirstPointCursorProc2)(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, EFALHANDLE hCSys);
+	typedef Ellis::DPNT(__cdecl *GetLastPointCursorProc2)(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, EFALHANDLE hCSys);
+	typedef Ellis::DPNT(__cdecl *PointAtDistanceCursorProc2)(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, EFALHANDLE hCSys, double dDistFromBeginning, Ellis::MIUNIT unit, Ellis::DIST_CALC_TYPE calculationType);
 	typedef bool(__cdecl *BufferCursorProc)(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, double distance, Ellis::MIUNIT unit, Ellis::DIST_CALC_TYPE calculationType, MI_UINT32 resolution, const wchar_t * dstvarname);
 	typedef bool(__cdecl *TransformCursorProc)(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, const wchar_t * dstvarname, const wchar_t * dstcsys);
+	typedef bool(__cdecl *TransformCursorProc2)(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, const wchar_t * dstvarname, EFALHANDLE hDestCSys);
 	typedef bool(__cdecl *UnionCursorProc)(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, const wchar_t * srcvarname2, const wchar_t * dstvarname);
 	typedef bool(__cdecl *ConvexHullCursorProc)(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, const wchar_t * dstvarname);
 	typedef bool(__cdecl *IntersectCursorProc)(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, const wchar_t * srcvarname2, const wchar_t * dstvarname);
@@ -213,8 +223,10 @@ private:
 	typedef bool(__cdecl *SetVariableValueInt32Proc)(EFALHANDLE hSession, const wchar_t * name, MI_INT32 value);
 	typedef bool(__cdecl *SetVariableValueInt16Proc)(EFALHANDLE hSession, const wchar_t * name, MI_INT16 value);
 	typedef bool(__cdecl *SetVariableValueStyleProc)(EFALHANDLE hSession, const wchar_t * name, const wchar_t * value);
+	typedef bool(__cdecl *SetVariableValueStyleObjectProc)(EFALHANDLE hSession, const wchar_t * name, EFALSTYLE value);
 	typedef bool(__cdecl *SetVariableValueBinaryProc)(EFALHANDLE hSession, const wchar_t * name, MI_UINT32 nbytes, const char * value);
 	typedef bool(__cdecl *SetVariableValueGeometryProc)(EFALHANDLE hSession, const wchar_t * name, MI_UINT32 nbytes, const char * value, const wchar_t * szcsys);
+	typedef bool(__cdecl *SetVariableValueGeometryExProc)(EFALHANDLE hSession, const wchar_t * name, MI_UINT32 nbytes, const char * value, EFALHANDLE hCoordSys, bool calculateCentroid, bool calculateWithin);
 	typedef bool(__cdecl *SetVariableValueTimespanInMillisecondsProc)(EFALHANDLE hSession, const wchar_t * name, double value);
 	typedef bool(__cdecl *SetVariableValueTimeProc)(EFALHANDLE hSession, const wchar_t * name, EFALTIME value);
 	typedef bool(__cdecl *SetVariableValueDateProc)(EFALHANDLE hSession, const wchar_t * name, EFALDATE value);
@@ -224,7 +236,7 @@ private:
 	typedef const char *(__cdecl *WcharString2Utf8Proc)(EFALHANDLE hSession, const wchar_t * pStr);
 
 	dynlib  __efalHandle = nullptr;
-private: 
+private:
 	// these are protected only to make it easy to unit test and see if they're all initialized.
 	// To make sure they're initialized PROPERLY needs us to call them all
 	InitializeSessionProc __InitializeSession = NULL;
@@ -252,10 +264,12 @@ private:
 	CoordSys2MBStringProc __CoordSys2MBString = NULL;
 	PRJ2CoordSysStringProc __PRJ2CoordSysString = NULL;
 	MB2CoordSysStringProc __MB2CoordSysString = NULL;
+	CoordSysStringToHandleProc __CoordSysStringToHandle = NULL;
 	RegisterOGCWKTCoordSysCallbacksProc __RegisterOGCWKTCoordSysCallbacks = NULL;
 	IsValidCoordSysProc __IsValidCoordSys = NULL;
 	CreateCoordinateTransformProc __CreateCoordinateTransform = NULL;
 	DestroyCoordinateTransformProc __DestroyCoordinateTransform = NULL;
+	DestroyCoordSysProc __DestroyCoordSys = NULL;
 	TransformCoordinateProc __TransformCoordinate = NULL;
 	TransformCoordinatesProc __TransformCoordinates = NULL;
 	TransformRectProc __TransformRect = NULL;
@@ -268,8 +282,12 @@ private:
 	GetFirstPointVariableProc __GetFirstPointVariable = NULL;
 	GetLastPointVariableProc __GetLastPointVariable = NULL;
 	PointAtDistanceVariableProc __PointAtDistanceVariable = NULL;
+	GetFirstPointVariableProc2 __GetFirstPointVariable2 = NULL;
+	GetLastPointVariableProc2 __GetLastPointVariable2 = NULL;
+	PointAtDistanceVariableProc2 __PointAtDistanceVariable2 = NULL;
 	BufferVariableProc __BufferVariable = NULL;
 	TransformVariableProc __TransformVariable = NULL;
+	TransformVariableProc2 __TransformVariable2 = NULL;
 	UnionVariableProc __UnionVariable = NULL;
 	ConvexHullVariableProc __ConvexHullVariable = NULL;
 	IntersectVariableProc __IntersectVariable = NULL;
@@ -284,8 +302,12 @@ private:
 	GetFirstPointCursorProc __GetFirstPointCursor = NULL;
 	GetLastPointCursorProc __GetLastPointCursor = NULL;
 	PointAtDistanceCursorProc __PointAtDistanceCursor = NULL;
+	GetFirstPointCursorProc2 __GetFirstPointCursor2 = NULL;
+	GetLastPointCursorProc2 __GetLastPointCursor2 = NULL;
+	PointAtDistanceCursorProc2 __PointAtDistanceCursor2 = NULL;
 	BufferCursorProc __BufferCursor = NULL;
 	TransformCursorProc __TransformCursor = NULL;
+	TransformCursorProc2 __TransformCursor2 = NULL;
 	UnionCursorProc __UnionCursor = NULL;
 	ConvexHullCursorProc __ConvexHullCursor = NULL;
 	IntersectCursorProc __IntersectCursor = NULL;
@@ -410,8 +432,10 @@ private:
 	SetVariableValueInt32Proc __SetVariableValueInt32 = NULL;
 	SetVariableValueInt16Proc __SetVariableValueInt16 = NULL;
 	SetVariableValueStyleProc __SetVariableValueStyle = NULL;
+	SetVariableValueStyleObjectProc __SetVariableValueStyleObject = NULL;
 	SetVariableValueBinaryProc __SetVariableValueBinary = NULL;
 	SetVariableValueGeometryProc __SetVariableValueGeometry = NULL;
+	SetVariableValueGeometryExProc __SetVariableValueGeometryEx = NULL;
 	SetVariableValueTimespanInMillisecondsProc __SetVariableValueTimespanInMilliseconds = NULL;
 	SetVariableValueTimeProc __SetVariableValueTime = NULL;
 	SetVariableValueDateProc __SetVariableValueDate = NULL;
@@ -422,8 +446,8 @@ private:
 
 	explicit EFALLIB(dynlib efalHandle) :
 		__efalHandle(efalHandle),
-		#if ELLIS_OS_IS_WINOS
-		#if defined(_WIN64 )
+#if ELLIS_OS_IS_WINOS
+#if defined(_WIN64 )
 		__InitializeSession((InitializeSessionProc)dynlib_sym(efalHandle, "?InitializeSession@EFAL@@YA_KP6APEB_WPEB_W@Z@Z")),
 		__DestroySession((DestroySessionProc)dynlib_sym(efalHandle, "?DestroySession@EFAL@@YAX_K@Z")),
 		__GetSystemCharset((GetSystemCharsetProc)dynlib_sym(efalHandle, "?GetSystemCharset@EFAL@@YA?AW4MICHARSET@Ellis@@_K@Z")),
@@ -449,49 +473,59 @@ private:
 		__CoordSys2MBString((CoordSys2MBStringProc)dynlib_sym(efalHandle, "?CoordSys2MBString@EFAL@@YAPEB_W_KPEB_W@Z")),
 		__PRJ2CoordSysString((PRJ2CoordSysStringProc)dynlib_sym(efalHandle, "?PRJ2CoordSysString@EFAL@@YAPEB_W_KPEB_W@Z")),
 		__MB2CoordSysString((MB2CoordSysStringProc)dynlib_sym(efalHandle, "?MB2CoordSysString@EFAL@@YAPEB_W_KPEB_W@Z")),
-		__RegisterOGCWKTCoordSysCallbacks((RegisterOGCWKTCoordSysCallbacksProc)dynlib_sym(efalHandle, "?RegisterOGCWKTCoordSysCallbacks@EFAL@@YA_N_KP6APEB_WPEB_W@Z2@Z")),		
+		__CoordSysStringToHandle((CoordSysStringToHandleProc)dynlib_sym(efalHandle, "?CoordSysStringToHandle@EFAL@@YA_K_KPEB_W@Z")),
+		__RegisterOGCWKTCoordSysCallbacks((RegisterOGCWKTCoordSysCallbacksProc)dynlib_sym(efalHandle, "?RegisterOGCWKTCoordSysCallbacks@EFAL@@YA_N_KP6APEB_WPEB_W@Z2@Z")),
 		__IsValidCoordSys((IsValidCoordSysProc)dynlib_sym(efalHandle, "?IsValidCoordSys@EFAL@@YA_N_KPEB_W@Z")),
-		__CreateCoordinateTransform((CreateCoordinateTransformProc)dynlib_sym(efalHandle, "?CreateCoordinateTransform@EFAL@@YA_K_KPEB_W1@Z")), 
-		__DestroyCoordinateTransform((DestroyCoordinateTransformProc)dynlib_sym(efalHandle, "?DestroyCoordinateTransform@EFAL@@YAX_K0@Z")), 
-		__TransformCoordinate((TransformCoordinateProc)dynlib_sym(efalHandle, "?TransformCoordinate@EFAL@@YA?AUDPNT@Ellis@@_K0U23@@Z")), 
-		__TransformCoordinates((TransformCoordinatesProc)dynlib_sym(efalHandle, "?TransformCoordinates@EFAL@@YAX_K0PEAUDPNT@Ellis@@1K@Z")), 
-		__TransformRect((TransformRectProc)dynlib_sym(efalHandle, "?TransformRect@EFAL@@YA?AUDRECT@Ellis@@_K0U23@@Z")), 
-		__ConvertRegistrationPoints2LL((ConvertRegistrationPoints2LLProc)dynlib_sym(efalHandle, "?ConvertRegistrationPoints2LL@EFAL@@YA_N_KPEAUDPNT@Ellis@@PEAULPNT@3@KPEB_W@Z")), 
-		__ConvertUnits((ConvertUnitsProc)dynlib_sym(efalHandle, "?ConvertUnits@EFAL@@YAN_KNW4MIUNIT@Ellis@@1@Z")), 
-		__GeometryInfoVariable((GeometryInfoVariableProc)dynlib_sym(efalHandle, "?GeometryInfo@EFAL@@YA_N_KPEB_WPEAHPEAUDRECT@Ellis@@PEAUDPNT@3@PEAK@Z")), 
-		__GetGeometryLengthVariable((GetGeometryLengthVariableProc)dynlib_sym(efalHandle, "?GetGeometryLength@EFAL@@YAN_KPEB_WW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@@Z")), 
-		__GetGeometryPerimeterVariable((GetGeometryPerimeterVariableProc)dynlib_sym(efalHandle, "?GetGeometryPerimeter@EFAL@@YAN_KPEB_WW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@@Z")), 
-		__GetGeometryAreaVariable((GetGeometryAreaVariableProc)dynlib_sym(efalHandle, "?GetGeometryArea@EFAL@@YAN_KPEB_WW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@@Z")), 
-		__GetFirstPointVariable((GetFirstPointVariableProc)dynlib_sym(efalHandle, "?GetFirstPoint@EFAL@@YA?AUDPNT@Ellis@@_KPEB_W1@Z")), 
-		__GetLastPointVariable((GetLastPointVariableProc)dynlib_sym(efalHandle, "?GetLastPoint@EFAL@@YA?AUDPNT@Ellis@@_KPEB_W1@Z")), 
-		__PointAtDistanceVariable((PointAtDistanceVariableProc)dynlib_sym(efalHandle, "?PointAtDistance@EFAL@@YA?AUDPNT@Ellis@@_KPEB_W1NW4MIUNIT@3@W4DIST_CALC_TYPE@3@@Z")), 
-		__BufferVariable((BufferVariableProc)dynlib_sym(efalHandle, "?Buffer@EFAL@@YA_N_KPEB_WNW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@K1@Z")), 
-		__TransformVariable((TransformVariableProc)dynlib_sym(efalHandle, "?Transform@EFAL@@YA_N_KPEB_W11@Z")), 
-		__UnionVariable((UnionVariableProc)dynlib_sym(efalHandle, "?Union@EFAL@@YA_N_KPEB_W11@Z")), 
-		__ConvexHullVariable((ConvexHullVariableProc)dynlib_sym(efalHandle, "?ConvexHull@EFAL@@YA_N_KPEB_W1@Z")), 
-		__IntersectVariable((IntersectVariableProc)dynlib_sym(efalHandle, "?Intersect@EFAL@@YA_N_KPEB_W11@Z")), 
-		__ContainsVariable((ContainsVariableProc)dynlib_sym(efalHandle, "?Contains@EFAL@@YA_N_KPEB_W1@Z")), 
-		__IsWithinVariable((IsWithinVariableProc)dynlib_sym(efalHandle, "?IsWithin@EFAL@@YA_N_KPEB_W1@Z")), 
-		__IntersectsVariable((IntersectsVariableProc)dynlib_sym(efalHandle, "?Intersects@EFAL@@YA_N_KPEB_W1@Z")), 
-		__EnvelopesIntersectVariable((EnvelopesIntersectVariableProc)dynlib_sym(efalHandle, "?EnvelopesIntersect@EFAL@@YA_N_KPEB_W1@Z")), 
-		__GeometryInfoCursor((GeometryInfoCursorProc)dynlib_sym(efalHandle, "?GeometryInfo@EFAL@@YA_N_K0KPEAHPEAUDRECT@Ellis@@PEAUDPNT@3@PEAK@Z")), 
-		__GetGeometryLengthCursor((GetGeometryLengthCursorProc)dynlib_sym(efalHandle, "?GetGeometryLength@EFAL@@YAN_K0KW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@@Z")), 
-		__GetGeometryPerimeterCursor((GetGeometryPerimeterCursorProc)dynlib_sym(efalHandle, "?GetGeometryPerimeter@EFAL@@YAN_K0KW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@@Z")), 
-		__GetGeometryAreaCursor((GetGeometryAreaCursorProc)dynlib_sym(efalHandle, "?GetGeometryArea@EFAL@@YAN_K0KW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@@Z")), 
-		__GetFirstPointCursor((GetFirstPointCursorProc)dynlib_sym(efalHandle, "?GetFirstPoint@EFAL@@YA?AUDPNT@Ellis@@_K0KPEB_W@Z")), 
-		__GetLastPointCursor((GetLastPointCursorProc)dynlib_sym(efalHandle, "?GetLastPoint@EFAL@@YA?AUDPNT@Ellis@@_K0KPEB_W@Z")), 
-		__PointAtDistanceCursor((PointAtDistanceCursorProc)dynlib_sym(efalHandle, "?PointAtDistance@EFAL@@YA?AUDPNT@Ellis@@_K0KPEB_WNW4MIUNIT@3@W4DIST_CALC_TYPE@3@@Z")), 
-		__BufferCursor((BufferCursorProc)dynlib_sym(efalHandle, "?Buffer@EFAL@@YA_N_K0KNW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@KPEB_W@Z")), 
-		__TransformCursor((TransformCursorProc)dynlib_sym(efalHandle, "?Transform@EFAL@@YA_N_K0KPEB_W1@Z")), 
-		__UnionCursor((UnionCursorProc)dynlib_sym(efalHandle, "?Union@EFAL@@YA_N_K0KPEB_W1@Z")), 
-		__ConvexHullCursor((ConvexHullCursorProc)dynlib_sym(efalHandle, "?ConvexHull@EFAL@@YA_N_K0KPEB_W@Z")), 
-		__IntersectCursor((IntersectCursorProc)dynlib_sym(efalHandle, "?Intersect@EFAL@@YA_N_K0KPEB_W1@Z")), 
-		__ContainsCursor((ContainsCursorProc)dynlib_sym(efalHandle, "?Contains@EFAL@@YA_N_K0KPEB_W@Z")), 
-		__IsWithinCursor((IsWithinCursorProc)dynlib_sym(efalHandle, "?IsWithin@EFAL@@YA_N_K0KPEB_W@Z")), 
-		__IntersectsCursor((IntersectsCursorProc)dynlib_sym(efalHandle, "?Intersects@EFAL@@YA_N_K0KPEB_W@Z")), 
-		__EnvelopesIntersectCursor((EnvelopesIntersectCursorProc)dynlib_sym(efalHandle, "?EnvelopesIntersect@EFAL@@YA_N_K0KPEB_W@Z")), 
-		__CopyGeometryCursor((CopyGeometryCursorProc)dynlib_sym(efalHandle, "?CopyGeometry@EFAL@@YAX_K0KPEB_W@Z")), 
-		__CopyGeometryVariable((CopyGeometryVariableProc)dynlib_sym(efalHandle, "?CopyGeometry@EFAL@@YAX_KPEB_W1@Z")), 
+		__CreateCoordinateTransform((CreateCoordinateTransformProc)dynlib_sym(efalHandle, "?CreateCoordinateTransform@EFAL@@YA_K_KPEB_W1@Z")),
+		__DestroyCoordinateTransform((DestroyCoordinateTransformProc)dynlib_sym(efalHandle, "?DestroyCoordinateTransform@EFAL@@YAX_K0@Z")),
+		__DestroyCoordSys((DestroyCoordSysProc)dynlib_sym(efalHandle, "?DestroyCoordSys@EFAL@@YAX_K0@Z")),
+		__TransformCoordinate((TransformCoordinateProc)dynlib_sym(efalHandle, "?TransformCoordinate@EFAL@@YA?AUDPNT@Ellis@@_K0U23@@Z")),
+		__TransformCoordinates((TransformCoordinatesProc)dynlib_sym(efalHandle, "?TransformCoordinates@EFAL@@YAX_K0PEAUDPNT@Ellis@@1K@Z")),
+		__TransformRect((TransformRectProc)dynlib_sym(efalHandle, "?TransformRect@EFAL@@YA?AUDRECT@Ellis@@_K0U23@@Z")),
+		__ConvertRegistrationPoints2LL((ConvertRegistrationPoints2LLProc)dynlib_sym(efalHandle, "?ConvertRegistrationPoints2LL@EFAL@@YA_N_KPEAUDPNT@Ellis@@PEAULPNT@3@KPEB_W@Z")),
+		__ConvertUnits((ConvertUnitsProc)dynlib_sym(efalHandle, "?ConvertUnits@EFAL@@YAN_KNW4MIUNIT@Ellis@@1@Z")),
+		__GeometryInfoVariable((GeometryInfoVariableProc)dynlib_sym(efalHandle, "?GeometryInfo@EFAL@@YA_N_KPEB_WPEAHPEAUDRECT@Ellis@@PEAUDPNT@3@PEAK@Z")),
+		__GetGeometryLengthVariable((GetGeometryLengthVariableProc)dynlib_sym(efalHandle, "?GetGeometryLength@EFAL@@YAN_KPEB_WW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@@Z")),
+		__GetGeometryPerimeterVariable((GetGeometryPerimeterVariableProc)dynlib_sym(efalHandle, "?GetGeometryPerimeter@EFAL@@YAN_KPEB_WW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@@Z")),
+		__GetGeometryAreaVariable((GetGeometryAreaVariableProc)dynlib_sym(efalHandle, "?GetGeometryArea@EFAL@@YAN_KPEB_WW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@@Z")),
+		__GetFirstPointVariable((GetFirstPointVariableProc)dynlib_sym(efalHandle, "?GetFirstPoint@EFAL@@YA?AUDPNT@Ellis@@_KPEB_W1@Z")),
+		__GetLastPointVariable((GetLastPointVariableProc)dynlib_sym(efalHandle, "?GetLastPoint@EFAL@@YA?AUDPNT@Ellis@@_KPEB_W1@Z")),
+		__PointAtDistanceVariable((PointAtDistanceVariableProc)dynlib_sym(efalHandle, "?PointAtDistance@EFAL@@YA?AUDPNT@Ellis@@_KPEB_W1NW4MIUNIT@3@W4DIST_CALC_TYPE@3@@Z")),
+		__GetFirstPointVariable2((GetFirstPointVariableProc2)dynlib_sym(efalHandle, "?GetFirstPoint@EFAL@@YA?AUDPNT@Ellis@@_KPEB_W0@Z")),
+		__GetLastPointVariable2((GetLastPointVariableProc2)dynlib_sym(efalHandle, "?GetLastPoint@EFAL@@YA?AUDPNT@Ellis@@_KPEB_W0@Z")),
+		__PointAtDistanceVariable2((PointAtDistanceVariableProc2)dynlib_sym(efalHandle, "?PointAtDistance@EFAL@@YA?AUDPNT@Ellis@@_KPEB_W0NW4MIUNIT@3@W4DIST_CALC_TYPE@3@@Z")),
+		__BufferVariable((BufferVariableProc)dynlib_sym(efalHandle, "?Buffer@EFAL@@YA_N_KPEB_WNW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@K1@Z")),
+		__TransformVariable((TransformVariableProc)dynlib_sym(efalHandle, "?Transform@EFAL@@YA_N_KPEB_W11@Z")),
+		__TransformVariable2((TransformVariableProc2)dynlib_sym(efalHandle, "?Transform@EFAL@@YA_N_KPEB_W10@Z")),
+		__UnionVariable((UnionVariableProc)dynlib_sym(efalHandle, "?Union@EFAL@@YA_N_KPEB_W11@Z")),
+		__ConvexHullVariable((ConvexHullVariableProc)dynlib_sym(efalHandle, "?ConvexHull@EFAL@@YA_N_KPEB_W1@Z")),
+		__IntersectVariable((IntersectVariableProc)dynlib_sym(efalHandle, "?Intersect@EFAL@@YA_N_KPEB_W11@Z")),
+		__ContainsVariable((ContainsVariableProc)dynlib_sym(efalHandle, "?Contains@EFAL@@YA_N_KPEB_W1@Z")),
+		__IsWithinVariable((IsWithinVariableProc)dynlib_sym(efalHandle, "?IsWithin@EFAL@@YA_N_KPEB_W1@Z")),
+		__IntersectsVariable((IntersectsVariableProc)dynlib_sym(efalHandle, "?Intersects@EFAL@@YA_N_KPEB_W1@Z")),
+		__EnvelopesIntersectVariable((EnvelopesIntersectVariableProc)dynlib_sym(efalHandle, "?EnvelopesIntersect@EFAL@@YA_N_KPEB_W1@Z")),
+		__GeometryInfoCursor((GeometryInfoCursorProc)dynlib_sym(efalHandle, "?GeometryInfo@EFAL@@YA_N_K0KPEAHPEAUDRECT@Ellis@@PEAUDPNT@3@PEAK@Z")),
+		__GetGeometryLengthCursor((GetGeometryLengthCursorProc)dynlib_sym(efalHandle, "?GetGeometryLength@EFAL@@YAN_K0KW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@@Z")),
+		__GetGeometryPerimeterCursor((GetGeometryPerimeterCursorProc)dynlib_sym(efalHandle, "?GetGeometryPerimeter@EFAL@@YAN_K0KW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@@Z")),
+		__GetGeometryAreaCursor((GetGeometryAreaCursorProc)dynlib_sym(efalHandle, "?GetGeometryArea@EFAL@@YAN_K0KW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@@Z")),
+		__GetFirstPointCursor((GetFirstPointCursorProc)dynlib_sym(efalHandle, "?GetFirstPoint@EFAL@@YA?AUDPNT@Ellis@@_K0KPEB_W@Z")),
+		__GetLastPointCursor((GetLastPointCursorProc)dynlib_sym(efalHandle, "?GetLastPoint@EFAL@@YA?AUDPNT@Ellis@@_K0KPEB_W@Z")),
+		__PointAtDistanceCursor((PointAtDistanceCursorProc)dynlib_sym(efalHandle, "?PointAtDistance@EFAL@@YA?AUDPNT@Ellis@@_K0KPEB_WNW4MIUNIT@3@W4DIST_CALC_TYPE@3@@Z")),
+		__GetFirstPointCursor2((GetFirstPointCursorProc2)dynlib_sym(efalHandle, "?GetFirstPoint@EFAL@@YA?AUDPNT@Ellis@@_K0K0@Z")),
+		__GetLastPointCursor2((GetLastPointCursorProc2)dynlib_sym(efalHandle, "?GetLastPoint@EFAL@@YA?AUDPNT@Ellis@@_K0K0@Z")),
+		__PointAtDistanceCursor2((PointAtDistanceCursorProc2)dynlib_sym(efalHandle, "?PointAtDistance@EFAL@@YA?AUDPNT@Ellis@@_K0K0NW4MIUNIT@3@W4DIST_CALC_TYPE@3@@Z")),
+		__BufferCursor((BufferCursorProc)dynlib_sym(efalHandle, "?Buffer@EFAL@@YA_N_K0KNW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@KPEB_W@Z")),
+		__TransformCursor((TransformCursorProc)dynlib_sym(efalHandle, "?Transform@EFAL@@YA_N_K0KPEB_W1@Z")),
+		__TransformCursor2((TransformCursorProc2)dynlib_sym(efalHandle, "?Transform@EFAL@@YA_N_K0KPEB_W0@Z")),
+		__UnionCursor((UnionCursorProc)dynlib_sym(efalHandle, "?Union@EFAL@@YA_N_K0KPEB_W1@Z")),
+		__ConvexHullCursor((ConvexHullCursorProc)dynlib_sym(efalHandle, "?ConvexHull@EFAL@@YA_N_K0KPEB_W@Z")),
+		__IntersectCursor((IntersectCursorProc)dynlib_sym(efalHandle, "?Intersect@EFAL@@YA_N_K0KPEB_W1@Z")),
+		__ContainsCursor((ContainsCursorProc)dynlib_sym(efalHandle, "?Contains@EFAL@@YA_N_K0KPEB_W@Z")),
+		__IsWithinCursor((IsWithinCursorProc)dynlib_sym(efalHandle, "?IsWithin@EFAL@@YA_N_K0KPEB_W@Z")),
+		__IntersectsCursor((IntersectsCursorProc)dynlib_sym(efalHandle, "?Intersects@EFAL@@YA_N_K0KPEB_W@Z")),
+		__EnvelopesIntersectCursor((EnvelopesIntersectCursorProc)dynlib_sym(efalHandle, "?EnvelopesIntersect@EFAL@@YA_N_K0KPEB_W@Z")),
+		__CopyGeometryCursor((CopyGeometryCursorProc)dynlib_sym(efalHandle, "?CopyGeometry@EFAL@@YAX_K0KPEB_W@Z")),
+		__CopyGeometryVariable((CopyGeometryVariableProc)dynlib_sym(efalHandle, "?CopyGeometry@EFAL@@YAX_KPEB_W1@Z")),
 		__GetTableName((GetTableNameProc)dynlib_sym(efalHandle, "?GetTableName@EFAL@@YAPEB_W_K0@Z")),
 		__GetTableDescription((GetTableDescriptionProc)dynlib_sym(efalHandle, "?GetTableDescription@EFAL@@YAPEB_W_K0@Z")),
 		__GetTablePath((GetTablePathProc)dynlib_sym(efalHandle, "?GetTablePath@EFAL@@YAPEB_W_K0@Z")),
@@ -607,8 +641,10 @@ private:
 		__SetVariableValueInt32((SetVariableValueInt32Proc)dynlib_sym(efalHandle, "?SetVariableValueInt32@EFAL@@YA_N_KPEB_WJ@Z")),
 		__SetVariableValueInt16((SetVariableValueInt16Proc)dynlib_sym(efalHandle, "?SetVariableValueInt16@EFAL@@YA_N_KPEB_WF@Z")),
 		__SetVariableValueStyle((SetVariableValueStyleProc)dynlib_sym(efalHandle, "?SetVariableValueStyle@EFAL@@YA_N_KPEB_W1@Z")),
+		__SetVariableValueStyleObject((SetVariableValueStyleObjectProc)dynlib_sym(efalHandle, "?SetVariableValueStyleObject@EFAL@@YA_N_KPEB_WUEFALSTYLE@@@Z")),
 		__SetVariableValueBinary((SetVariableValueBinaryProc)dynlib_sym(efalHandle, "?SetVariableValueBinary@EFAL@@YA_N_KPEB_WKPEBD@Z")),
 		__SetVariableValueGeometry((SetVariableValueGeometryProc)dynlib_sym(efalHandle, "?SetVariableValueGeometry@EFAL@@YA_N_KPEB_WKPEBD1@Z")),
+		__SetVariableValueGeometryEx((SetVariableValueGeometryExProc)dynlib_sym(efalHandle, "?SetVariableValueGeometryEx@EFAL@@YA_N_KPEB_WKPEBD0_N3@Z")),
 		__SetVariableValueTimespanInMilliseconds((SetVariableValueTimespanInMillisecondsProc)dynlib_sym(efalHandle, "?SetVariableValueTimespanInMilliseconds@EFAL@@YA_N_KPEB_WN@Z")),
 		__SetVariableValueTime((SetVariableValueTimeProc)dynlib_sym(efalHandle, "?SetVariableValueTime@EFAL@@YA_N_KPEB_WUEFALTIME@@@Z")),
 		__SetVariableValueDate((SetVariableValueDateProc)dynlib_sym(efalHandle, "?SetVariableValueDate@EFAL@@YA_N_KPEB_WUEFALDATE@@@Z")),
@@ -616,7 +652,7 @@ private:
 		__StringByteLength((StringByteLengthProc)dynlib_sym(efalHandle, "?StringByteLength@EFAL@@YA_K_KPEB_WW4MICHARSET@Ellis@@@Z")),
 		__Utf8String2wchar((Utf8String2wcharProc)dynlib_sym(efalHandle, "?Utf8String2wchar@EFAL@@YAPEB_W_KPEBD@Z")),
 		__WcharString2Utf8((WcharString2Utf8Proc)dynlib_sym(efalHandle, "?WcharString2Utf8@EFAL@@YAPEBD_KPEB_W@Z"))
-		#else
+#else
 		// Windows 32-bit
 		__InitializeSession((InitializeSessionProc)dynlib_sym(efalHandle, "?InitializeSession@EFAL@@YA_KP6APB_WPB_W@Z@Z")),
 		__DestroySession((DestroySessionProc)dynlib_sym(efalHandle, "?DestroySession@EFAL@@YAX_K@Z")),
@@ -643,10 +679,12 @@ private:
 		__CoordSys2MBString((CoordSys2MBStringProc)dynlib_sym(efalHandle, "?CoordSys2MBString@EFAL@@YAPB_W_KPB_W@Z")),
 		__PRJ2CoordSysString((PRJ2CoordSysStringProc)dynlib_sym(efalHandle, "?PRJ2CoordSysString@EFAL@@YAPB_W_KPB_W@Z")),
 		__MB2CoordSysString((MB2CoordSysStringProc)dynlib_sym(efalHandle, "?MB2CoordSysString@EFAL@@YAPB_W_KPB_W@Z")),
+		__CoordSysStringToHandle((CoordSysStringToHandleProc)dynlib_sym(efalHandle, "?CoordSysStringToHandle@EFAL@@YA_K_KPB_W@Z")),
 		__RegisterOGCWKTCoordSysCallbacks((RegisterOGCWKTCoordSysCallbacksProc)dynlib_sym(efalHandle, "?RegisterOGCWKTCoordSysCallbacks@EFAL@@YA_N_KP6APB_WPB_W@Z2@Z")),
 		__IsValidCoordSys((IsValidCoordSysProc)dynlib_sym(efalHandle, "?IsValidCoordSys@EFAL@@YA_N_KPB_W@Z")),
 		__CreateCoordinateTransform((CreateCoordinateTransformProc)dynlib_sym(efalHandle, "?CreateCoordinateTransform@EFAL@@YA_K_KPB_W1@Z")),
 		__DestroyCoordinateTransform((DestroyCoordinateTransformProc)dynlib_sym(efalHandle, "?DestroyCoordinateTransform@EFAL@@YAX_K0@Z")),
+		__DestroyCoordSys((DestroyCoordSysProc)dynlib_sym(efalHandle, "?DestroyCoordSys@EFAL@@YAX_K0@Z")),
 		__TransformCoordinate((TransformCoordinateProc)dynlib_sym(efalHandle, "?TransformCoordinate@EFAL@@YA?AUDPNT@Ellis@@_K0U23@@Z")),
 		__TransformCoordinates((TransformCoordinatesProc)dynlib_sym(efalHandle, "?TransformCoordinates@EFAL@@YAX_K0PAUDPNT@Ellis@@1K@Z")),
 		__TransformRect((TransformRectProc)dynlib_sym(efalHandle, "?TransformRect@EFAL@@YA?AUDRECT@Ellis@@_K0U23@@Z")),
@@ -659,8 +697,12 @@ private:
 		__GetFirstPointCursor((GetFirstPointCursorProc)dynlib_sym(efalHandle, "?GetFirstPoint@EFAL@@YA?AUDPNT@Ellis@@_K0KPB_W@Z")),
 		__GetLastPointCursor((GetLastPointCursorProc)dynlib_sym(efalHandle, "?GetLastPoint@EFAL@@YA?AUDPNT@Ellis@@_K0KPB_W@Z")),
 		__PointAtDistanceCursor((PointAtDistanceCursorProc)dynlib_sym(efalHandle, "?PointAtDistance@EFAL@@YA?AUDPNT@Ellis@@_K0KPB_WNW4MIUNIT@3@W4DIST_CALC_TYPE@3@@Z")),
+		__GetFirstPointCursor2((GetFirstPointCursorProc2)dynlib_sym(efalHandle, "?GetFirstPoint@EFAL@@YA?AUDPNT@Ellis@@_K0K0@Z")),
+		__GetLastPointCursor2((GetLastPointCursorProc2)dynlib_sym(efalHandle, "?GetLastPoint@EFAL@@YA?AUDPNT@Ellis@@_K0K0@Z")),
+		__PointAtDistanceCursor2((PointAtDistanceCursorProc2)dynlib_sym(efalHandle, "?PointAtDistance@EFAL@@YA?AUDPNT@Ellis@@_K0K0NW4MIUNIT@3@W4DIST_CALC_TYPE@3@@Z")),
 		__BufferCursor((BufferCursorProc)dynlib_sym(efalHandle, "?Buffer@EFAL@@YA_N_K0KNW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@KPB_W@Z")),
 		__TransformCursor((TransformCursorProc)dynlib_sym(efalHandle, "?Transform@EFAL@@YA_N_K0KPB_W1@Z")),
+		__TransformCursor2((TransformCursorProc2)dynlib_sym(efalHandle, "?Transform@EFAL@@YA_N_K0KPB_W0@Z")),
 		__UnionCursor((UnionCursorProc)dynlib_sym(efalHandle, "?Union@EFAL@@YA_N_K0KPB_W1@Z")),
 		__ConvexHullCursor((ConvexHullCursorProc)dynlib_sym(efalHandle, "?ConvexHull@EFAL@@YA_N_K0KPB_W@Z")),
 		__IntersectCursor((IntersectCursorProc)dynlib_sym(efalHandle, "?Intersect@EFAL@@YA_N_K0KPB_W1@Z")),
@@ -785,8 +827,10 @@ private:
 		__SetVariableValueInt32((SetVariableValueInt32Proc)dynlib_sym(efalHandle, "?SetVariableValueInt32@EFAL@@YA_N_KPB_WJ@Z")),
 		__SetVariableValueInt16((SetVariableValueInt16Proc)dynlib_sym(efalHandle, "?SetVariableValueInt16@EFAL@@YA_N_KPB_WF@Z")),
 		__SetVariableValueStyle((SetVariableValueStyleProc)dynlib_sym(efalHandle, "?SetVariableValueStyle@EFAL@@YA_N_KPB_W1@Z")),
+		__SetVariableValueStyleObject((SetVariableValueStyleObjectProc)dynlib_sym(efalHandle, "?SetVariableValueStyleObject@EFAL@@YA_N_KPB_WUEFALSTYLE@@@Z")),
 		__SetVariableValueBinary((SetVariableValueBinaryProc)dynlib_sym(efalHandle, "?SetVariableValueBinary@EFAL@@YA_N_KPB_WKPBD@Z")),
 		__SetVariableValueGeometry((SetVariableValueGeometryProc)dynlib_sym(efalHandle, "?SetVariableValueGeometry@EFAL@@YA_N_KPB_WKPBD1@Z")),
+		__SetVariableValueGeometryEx((SetVariableValueGeometryExProc)dynlib_sym(efalHandle, "?SetVariableValueGeometryEx@EFAL@@YA_N_KPB_WKPBD0_N3@Z")),
 		__SetVariableValueTimespanInMilliseconds((SetVariableValueTimespanInMillisecondsProc)dynlib_sym(efalHandle, "?SetVariableValueTimespanInMilliseconds@EFAL@@YA_N_KPB_WN@Z")),
 		__SetVariableValueTime((SetVariableValueTimeProc)dynlib_sym(efalHandle, "?SetVariableValueTime@EFAL@@YA_N_KPB_WUEFALTIME@@@Z")),
 		__SetVariableValueDate((SetVariableValueDateProc)dynlib_sym(efalHandle, "?SetVariableValueDate@EFAL@@YA_N_KPB_WUEFALDATE@@@Z")),
@@ -801,8 +845,12 @@ private:
 		__GetFirstPointVariable((GetFirstPointVariableProc)dynlib_sym(efalHandle, "?GetFirstPoint@EFAL@@YA?AUDPNT@Ellis@@_KPB_W1@Z")),
 		__GetLastPointVariable((GetLastPointVariableProc)dynlib_sym(efalHandle, "?GetLastPoint@EFAL@@YA?AUDPNT@Ellis@@_KPB_W1@Z")),
 		__PointAtDistanceVariable((PointAtDistanceVariableProc)dynlib_sym(efalHandle, "?PointAtDistance@EFAL@@YA?AUDPNT@Ellis@@_KPB_W1NW4MIUNIT@3@W4DIST_CALC_TYPE@3@@Z")),
+		__GetFirstPointVariable2((GetFirstPointVariableProc2)dynlib_sym(efalHandle, "?GetFirstPoint@EFAL@@YA?AUDPNT@Ellis@@_KPB_W0@Z")),
+		__GetLastPointVariable2((GetLastPointVariableProc2)dynlib_sym(efalHandle, "?GetLastPoint@EFAL@@YA?AUDPNT@Ellis@@_KPB_W0@Z")),
+		__PointAtDistanceVariable2((PointAtDistanceVariableProc2)dynlib_sym(efalHandle, "?PointAtDistance@EFAL@@YA?AUDPNT@Ellis@@_KPB_W0NW4MIUNIT@3@W4DIST_CALC_TYPE@3@@Z")),
 		__BufferVariable((BufferVariableProc)dynlib_sym(efalHandle, "?Buffer@EFAL@@YA_N_KPB_WNW4MIUNIT@Ellis@@W4DIST_CALC_TYPE@3@K1@Z")),
 		__TransformVariable((TransformVariableProc)dynlib_sym(efalHandle, "?Transform@EFAL@@YA_N_KPB_W11@Z")),
+		__TransformVariable2((TransformVariableProc2)dynlib_sym(efalHandle, "?Transform@EFAL@@YA_N_KPB_W10@Z")),
 		__UnionVariable((UnionVariableProc)dynlib_sym(efalHandle, "?Union@EFAL@@YA_N_KPB_W11@Z")),
 		__ConvexHullVariable((ConvexHullVariableProc)dynlib_sym(efalHandle, "?ConvexHull@EFAL@@YA_N_KPB_W1@Z")),
 		__IntersectVariable((IntersectVariableProc)dynlib_sym(efalHandle, "?Intersect@EFAL@@YA_N_KPB_W11@Z")),
@@ -810,8 +858,8 @@ private:
 		__IsWithinVariable((IsWithinVariableProc)dynlib_sym(efalHandle, "?IsWithin@EFAL@@YA_N_KPB_W1@Z")),
 		__IntersectsVariable((IntersectsVariableProc)dynlib_sym(efalHandle, "?Intersects@EFAL@@YA_N_KPB_W1@Z")),
 		__EnvelopesIntersectVariable((EnvelopesIntersectVariableProc)dynlib_sym(efalHandle, "?EnvelopesIntersect@EFAL@@YA_N_KPB_W1@Z"))
-		#endif
-		#else
+#endif
+#else
 		__InitializeSession((InitializeSessionProc)dynlib_sym(efalHandle, "_ZN4EFAL17InitializeSessionEPFPKwS1_E")),
 		__DestroySession((DestroySessionProc)dynlib_sym(efalHandle, "_ZN4EFAL14DestroySessionEy")),
 		__GetSystemCharset((GetSystemCharsetProc)dynlib_sym(efalHandle, "_ZN4EFAL16GetSystemCharsetEy")),
@@ -837,40 +885,50 @@ private:
 		__CoordSys2MBString((CoordSys2MBStringProc)dynlib_sym(efalHandle, "_ZN4EFAL17CoordSys2MBStringEyPKw")),
 		__PRJ2CoordSysString((PRJ2CoordSysStringProc)dynlib_sym(efalHandle, "_ZN4EFAL18PRJ2CoordSysStringEyPKw")),
 		__MB2CoordSysString((MB2CoordSysStringProc)dynlib_sym(efalHandle, "_ZN4EFAL17MB2CoordSysStringEyPKw")),
+		__CoordSysStringToHandle((CoordSysStringToHandleProc)dynlib_sym(efalHandle, "_ZN4EFAL22CoordSysStringToHandleEyPKw")),
 		__RegisterOGCWKTCoordSysCallbacks((RegisterOGCWKTCoordSysCallbacksProc)dynlib_sym(efalHandle, "_ZN4EFAL31RegisterOGCWKTCoordSysCallbacksEyPFPKwS1_ES3_")),
 		__IsValidCoordSys((IsValidCoordSysProc)dynlib_sym(efalHandle, "_ZN4EFAL15IsValidCoordSysEyPKw")),
 		__CreateCoordinateTransform((CreateCoordinateTransformProc)dynlib_sym(efalHandle, "_ZN4EFAL25CreateCoordinateTransformEyPKwS1_")),
-		__DestroyCoordinateTransform((DestroyCoordinateTransformProc)dynlib_sym(efalHandle, "_ZN4EFAL26DestroyCoordinateTransformEyy")), 
+		__DestroyCoordinateTransform((DestroyCoordinateTransformProc)dynlib_sym(efalHandle, "_ZN4EFAL26DestroyCoordinateTransformEyy")),
+		__DestroyCoordSys((DestroyCoordSysProc)dynlib_sym(efalHandle, "_ZN4EFAL15DestroyCoordSysEyy")),
 		__TransformCoordinate((TransformCoordinateProc)dynlib_sym(efalHandle, "_ZN4EFAL19TransformCoordinateEyyN5Ellis4DPNTE")),
 		__TransformCoordinates((TransformCoordinatesProc)dynlib_sym(efalHandle, "_ZN4EFAL20TransformCoordinatesEyyPN5Ellis4DPNTES2_j")),
 		__TransformRect((TransformRectProc)dynlib_sym(efalHandle, "_ZN4EFAL13TransformRectEyyN5Ellis5DRECTE")),
 		__ConvertRegistrationPoints2LL((ConvertRegistrationPoints2LLProc)dynlib_sym(efalHandle, "_ZN4EFAL28ConvertRegistrationPoints2LLEyPN5Ellis4DPNTEPNS0_4LPNTEjPKw")),
 		__ConvertUnits((ConvertUnitsProc)dynlib_sym(efalHandle, "_ZN4EFAL12ConvertUnitsEydN5Ellis6MIUNITES1_")),
 		__GeometryInfoVariable((GeometryInfoVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL12GeometryInfoEyPKwPiPN5Ellis5DRECTEPNS3_4DPNTEPj")),
-		__GetGeometryLengthVariable((GetGeometryLengthVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL17GetGeometryLengthEyPKwN5Ellis6MIUNITENS2_14DIST_CALC_TYPEE")), 
+		__GetGeometryLengthVariable((GetGeometryLengthVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL17GetGeometryLengthEyPKwN5Ellis6MIUNITENS2_14DIST_CALC_TYPEE")),
 		__GetGeometryPerimeterVariable((GetGeometryPerimeterVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL20GetGeometryPerimeterEyPKwN5Ellis6MIUNITENS2_14DIST_CALC_TYPEE")),
 		__GetGeometryAreaVariable((GetGeometryAreaVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL15GetGeometryAreaEyPKwN5Ellis6MIUNITENS2_14DIST_CALC_TYPEE")),
 		__GetFirstPointVariable((GetFirstPointVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL13GetFirstPointEyPKwS1_")),
 		__GetLastPointVariable((GetLastPointVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL12GetLastPointEyPKwS1_")),
 		__PointAtDistanceVariable((PointAtDistanceVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL15PointAtDistanceEyPKwS1_dN5Ellis6MIUNITENS2_14DIST_CALC_TYPEE")),
-		__BufferVariable((BufferVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL6BufferEyPKwdN5Ellis6MIUNITENS2_14DIST_CALC_TYPEEjS1_")), 
+		__GetFirstPointVariable2((GetFirstPointVariableProc2)dynlib_sym(efalHandle, "_ZN4EFAL13GetFirstPointEyPKwy")),
+		__GetLastPointVariable2((GetLastPointVariableProc2)dynlib_sym(efalHandle, "_ZN4EFAL12GetLastPointEyPKwy")),
+		__PointAtDistanceVariable2((PointAtDistanceVariableProc2)dynlib_sym(efalHandle, "_ZN4EFAL15PointAtDistanceEyPKwydN5Ellis6MIUNITENS2_14DIST_CALC_TYPEE")),
+		__BufferVariable((BufferVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL6BufferEyPKwdN5Ellis6MIUNITENS2_14DIST_CALC_TYPEEjS1_")),
 		__TransformVariable((TransformVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL9TransformEyPKwS1_S1_")),
+		__TransformVariable2((TransformVariableProc2)dynlib_sym(efalHandle, "_ZN4EFAL9TransformEyPKwS1_y")),
 		__UnionVariable((UnionVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL5UnionEyPKwS1_S1_")),
 		__ConvexHullVariable((ConvexHullVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL10ConvexHullEyPKwS1_")),
 		__IntersectVariable((IntersectVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL9IntersectEyPKwS1_S1_")),
 		__ContainsVariable((ContainsVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL8ContainsEyPKwS1_")),
 		__IsWithinVariable((IsWithinVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL8IsWithinEyPKwS1_")),
 		__IntersectsVariable((IntersectsVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL10IntersectsEyPKwS1_")),
-		__EnvelopesIntersectVariable((EnvelopesIntersectVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL18EnvelopesIntersectEyPKwS1_")), 
+		__EnvelopesIntersectVariable((EnvelopesIntersectVariableProc)dynlib_sym(efalHandle, "_ZN4EFAL18EnvelopesIntersectEyPKwS1_")),
 		__GeometryInfoCursor((GeometryInfoCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL12GeometryInfoEyyjPiPN5Ellis5DRECTEPNS1_4DPNTEPj")),
 		__GetGeometryLengthCursor((GetGeometryLengthCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL17GetGeometryLengthEyyjN5Ellis6MIUNITENS0_14DIST_CALC_TYPEE")),
 		__GetGeometryPerimeterCursor((GetGeometryPerimeterCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL20GetGeometryPerimeterEyyjN5Ellis6MIUNITENS0_14DIST_CALC_TYPEE")),
-		__GetGeometryAreaCursor((GetGeometryAreaCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL15GetGeometryAreaEyyjN5Ellis6MIUNITENS0_14DIST_CALC_TYPEE")), 
+		__GetGeometryAreaCursor((GetGeometryAreaCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL15GetGeometryAreaEyyjN5Ellis6MIUNITENS0_14DIST_CALC_TYPEE")),
 		__GetFirstPointCursor((GetFirstPointCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL13GetFirstPointEyyjPKw")),
-		__GetLastPointCursor((GetLastPointCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL12GetLastPointEyyjPKw")), 
+		__GetLastPointCursor((GetLastPointCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL12GetLastPointEyyjPKw")),
 		__PointAtDistanceCursor((PointAtDistanceCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL15PointAtDistanceEyyjPKwdN5Ellis6MIUNITENS2_14DIST_CALC_TYPEE")),
+		__GetFirstPointCursor2((GetFirstPointCursorProc2)dynlib_sym(efalHandle, "_ZN4EFAL13GetFirstPointEyyjy")),
+		__GetLastPointCursor2((GetLastPointCursorProc2)dynlib_sym(efalHandle, "_ZN4EFAL12GetLastPointEyyjy")),
+		__PointAtDistanceCursor2((PointAtDistanceCursorProc2)dynlib_sym(efalHandle, "_ZN4EFAL15PointAtDistanceEyyjydN5Ellis6MIUNITENS0_14DIST_CALC_TYPEE")),
 		__BufferCursor((BufferCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL6BufferEyyjdN5Ellis6MIUNITENS0_14DIST_CALC_TYPEEjPKw")),
 		__TransformCursor((TransformCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL9TransformEyyjPKwS1_")),
+		__TransformCursor2((TransformCursorProc2)dynlib_sym(efalHandle, "_ZN4EFAL9TransformEyyjPKwy")),
 		__UnionCursor((UnionCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL5UnionEyyjPKwS1_")),
 		__ConvexHullCursor((ConvexHullCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL10ConvexHullEyyjPKw")),
 		__IntersectCursor((IntersectCursorProc)dynlib_sym(efalHandle, "_ZN4EFAL9IntersectEyyjPKwS1_")),
@@ -995,8 +1053,10 @@ private:
 		__SetVariableValueInt32((SetVariableValueInt32Proc)dynlib_sym(efalHandle, "_ZN4EFAL21SetVariableValueInt32EyPKwi")),
 		__SetVariableValueInt16((SetVariableValueInt16Proc)dynlib_sym(efalHandle, "_ZN4EFAL21SetVariableValueInt16EyPKws")),
 		__SetVariableValueStyle((SetVariableValueStyleProc)dynlib_sym(efalHandle, "_ZN4EFAL21SetVariableValueStyleEyPKwS1_")),
+		__SetVariableValueStyleObject((SetVariableValueStyleObjectProc)dynlib_sym(efalHandle, "_ZN4EFAL27SetVariableValueStyleObjectEyPKw9EFALSTYLE")),
 		__SetVariableValueBinary((SetVariableValueBinaryProc)dynlib_sym(efalHandle, "_ZN4EFAL22SetVariableValueBinaryEyPKwjPKc")),
 		__SetVariableValueGeometry((SetVariableValueGeometryProc)dynlib_sym(efalHandle, "_ZN4EFAL24SetVariableValueGeometryEyPKwjPKcS1_")),
+		__SetVariableValueGeometryEx((SetVariableValueGeometryExProc)dynlib_sym(efalHandle, "_ZN4EFAL26SetVariableValueGeometryExEyPKwjPKcybb")),
 		__SetVariableValueTimespanInMilliseconds((SetVariableValueTimespanInMillisecondsProc)dynlib_sym(efalHandle, "_ZN4EFAL38SetVariableValueTimespanInMillisecondsEyPKwd")),
 		__SetVariableValueTime((SetVariableValueTimeProc)dynlib_sym(efalHandle, "_ZN4EFAL20SetVariableValueTimeEyPKw8EFALTIME")),
 		__SetVariableValueDate((SetVariableValueDateProc)dynlib_sym(efalHandle, "_ZN4EFAL20SetVariableValueDateEyPKw8EFALDATE")),
@@ -1004,7 +1064,7 @@ private:
 		__StringByteLength((StringByteLengthProc)dynlib_sym(efalHandle, "_ZN4EFAL16StringByteLengthEyPKwN5Ellis9MICHARSETE")),
 		__Utf8String2wchar((Utf8String2wcharProc)dynlib_sym(efalHandle, "_ZN4EFAL16Utf8String2wcharEyPKc")),
 		__WcharString2Utf8((WcharString2Utf8Proc)dynlib_sym(efalHandle, "_ZN4EFAL16WcharString2Utf8EyPKw"))
-		#endif
+#endif
 	{
 	}
 
@@ -1023,7 +1083,7 @@ public:
 			return efallib;
 		}
 		return NULL;
-	}
+}
 	~EFALLIB()
 	{
 		//if (__efalHandle)
@@ -1063,10 +1123,12 @@ public:
 	bool HasCoordSys2MBStringProc() { return (__CoordSys2MBString != nullptr); }
 	bool HasPRJ2CoordSysStringProc() { return (__PRJ2CoordSysString != nullptr); }
 	bool HasMB2CoordSysStringProc() { return (__MB2CoordSysString != nullptr); }
+	bool HasCoordSysStringToHandleProc() { return (__CoordSysStringToHandle != nullptr); }
 	bool HasRegisterOGCWKTCoordSysCallbacksProc() { return (__RegisterOGCWKTCoordSysCallbacks != nullptr); }
 	bool HasIsValidCoordSysProc() { return (__IsValidCoordSys != nullptr); }
 	bool HasCreateCoordinateTransformProc() { return (__CreateCoordinateTransform != nullptr); }
 	bool HasDestroyCoordinateTransformProc() { return (__DestroyCoordinateTransform != nullptr); }
+	bool HasDestroyCoordSysProc() { return (__DestroyCoordSys != nullptr); }
 	bool HasTransformCoordinateProc() { return (__TransformCoordinate != nullptr); }
 	bool HasTransformCoordinatesProc() { return (__TransformCoordinates != nullptr); }
 	bool HasTransformRectProc() { return (__TransformRect != nullptr); }
@@ -1079,8 +1141,12 @@ public:
 	bool HasGetFirstPointVariableProc() { return (__GetFirstPointVariable != nullptr); }
 	bool HasGetLastPointVariableProc() { return (__GetLastPointVariable != nullptr); }
 	bool HasPointAtDistanceVariableProc() { return (__PointAtDistanceVariable != nullptr); }
+	bool HasGetFirstPointVariableProc2() { return (__GetFirstPointVariable2 != nullptr); }
+	bool HasGetLastPointVariableProc2() { return (__GetLastPointVariable2 != nullptr); }
+	bool HasPointAtDistanceVariableProc2() { return (__PointAtDistanceVariable2 != nullptr); }
 	bool HasBufferVariableProc() { return (__BufferVariable != nullptr); }
 	bool HasTransformVariableProc() { return (__TransformVariable != nullptr); }
+	bool HasTransformVariableProc2() { return (__TransformVariable2 != nullptr); }
 	bool HasUnionVariableProc() { return (__UnionVariable != nullptr); }
 	bool HasConvexHullVariableProc() { return (__ConvexHullVariable != nullptr); }
 	bool HasIntersectVariableProc() { return (__IntersectVariable != nullptr); }
@@ -1095,8 +1161,12 @@ public:
 	bool HasGetFirstPointCursorProc() { return (__GetFirstPointCursor != nullptr); }
 	bool HasGetLastPointCursorProc() { return (__GetLastPointCursor != nullptr); }
 	bool HasPointAtDistanceCursorProc() { return (__PointAtDistanceCursor != nullptr); }
+	bool HasGetFirstPointCursorProc2() { return (__GetFirstPointCursor2 != nullptr); }
+	bool HasGetLastPointCursorProc2() { return (__GetLastPointCursor2 != nullptr); }
+	bool HasPointAtDistanceCursorProc2() { return (__PointAtDistanceCursor2 != nullptr); }
 	bool HasBufferCursorProc() { return (__BufferCursor != nullptr); }
 	bool HasTransformCursorProc() { return (__TransformCursor != nullptr); }
+	bool HasTransformCursorProc2() { return (__TransformCursor2 != nullptr); }
 	bool HasUnionCursorProc() { return (__UnionCursor != nullptr); }
 	bool HasConvexHullCursorProc() { return (__ConvexHullCursor != nullptr); }
 	bool HasIntersectCursorProc() { return (__IntersectCursor != nullptr); }
@@ -1221,8 +1291,10 @@ public:
 	bool HasSetVariableValueInt32Proc() { return (__SetVariableValueInt32 != nullptr); }
 	bool HasSetVariableValueInt16Proc() { return (__SetVariableValueInt16 != nullptr); }
 	bool HasSetVariableValueStyleProc() { return (__SetVariableValueStyle != nullptr); }
+	bool HasSetVariableValueStyleObjectProc() { return (__SetVariableValueStyleObject != nullptr); }
 	bool HasSetVariableValueBinaryProc() { return (__SetVariableValueBinary != nullptr); }
 	bool HasSetVariableValueGeometryProc() { return (__SetVariableValueGeometry != nullptr); }
+	bool HasSetVariableValueGeometryExProc() { return (__SetVariableValueGeometryEx != nullptr); }
 	bool HasSetVariableValueTimespanInMillisecondsProc() { return (__SetVariableValueTimespanInMilliseconds != nullptr); }
 	bool HasSetVariableValueTimeProc() { return (__SetVariableValueTime != nullptr); }
 	bool HasSetVariableValueDateProc() { return (__SetVariableValueDate != nullptr); }
@@ -1460,6 +1532,14 @@ public:
 		}
 		return nullptr;
 	}
+	EFALHANDLE CoordSysStringToHandle(EFALHANDLE hSession, const wchar_t * csys)
+	{
+		if (__CoordSysStringToHandle != nullptr)
+		{
+			return (__CoordSysStringToHandle)(hSession, csys);
+		}
+		return 0;
+	}
 	bool RegisterOGCWKTCoordSysCallbacks(EFALHANDLE hSession, CoordSys_PRJ2OGCWKT_Callback coordSys_PRJ2OGCWKT_Callback, CoordSys_OGCWKT2PRJ_Callback coordSys_OGCWKT2PRJ_Callback)
 	{
 		if (__RegisterOGCWKTCoordSysCallbacks != nullptr)
@@ -1489,6 +1569,13 @@ public:
 		if (__DestroyCoordinateTransform != nullptr)
 		{
 			(__DestroyCoordinateTransform)(hSession, hCoordinateTransform);
+		}
+	}
+	void DestroyCoordSys(EFALHANDLE hSession, EFALHANDLE hCoordSys)
+	{
+		if (__DestroyCoordSys != nullptr)
+		{
+			(__DestroyCoordSys)(hSession, hCoordSys);
 		}
 	}
 	Ellis::DPNT TransformCoordinate(EFALHANDLE hSession, EFALHANDLE hCoordinateTransform, Ellis::DPNT src)
@@ -1591,6 +1678,33 @@ public:
 		Ellis::DPNT dpnt; dpnt.x = dpnt.y = 0;
 		return dpnt;
 	}
+	Ellis::DPNT GetFirstPoint(EFALHANDLE hSession, const wchar_t * varname, EFALHANDLE hCSys)
+	{
+		if (__GetFirstPointVariable2 != nullptr)
+		{
+			return (__GetFirstPointVariable2)(hSession, varname, hCSys);
+		}
+		Ellis::DPNT dpnt; dpnt.x = dpnt.y = 0;
+		return dpnt;
+	}
+	Ellis::DPNT GetLastPoint(EFALHANDLE hSession, const wchar_t * varname, EFALHANDLE hCSys)
+	{
+		if (__GetLastPointVariable2 != nullptr)
+		{
+			return (__GetLastPointVariable2)(hSession, varname, hCSys);
+		}
+		Ellis::DPNT dpnt; dpnt.x = dpnt.y = 0;
+		return dpnt;
+	}
+	Ellis::DPNT PointAtDistance(EFALHANDLE hSession, const wchar_t * varname, EFALHANDLE hCSys, double dDistFromBeginning, Ellis::MIUNIT unit, Ellis::DIST_CALC_TYPE calculationType)
+	{
+		if (__PointAtDistanceVariable2 != nullptr)
+		{
+			return (__PointAtDistanceVariable2)(hSession, varname, hCSys, dDistFromBeginning, unit, calculationType);
+		}
+		Ellis::DPNT dpnt; dpnt.x = dpnt.y = 0;
+		return dpnt;
+	}
 	bool Buffer(EFALHANDLE hSession, const wchar_t * srcvarname, double distance, Ellis::MIUNIT unit, Ellis::DIST_CALC_TYPE calculationType, MI_UINT32 resolution, const wchar_t * dstvarname)
 	{
 		if (__BufferVariable != nullptr)
@@ -1604,6 +1718,14 @@ public:
 		if (__TransformVariable != nullptr)
 		{
 			return (__TransformVariable)(hSession, srcvarname, dstvarname, dstcsys);
+		}
+		return false;
+	}
+	bool Transform(EFALHANDLE hSession, const wchar_t * srcvarname, const wchar_t * dstvarname, EFALHANDLE hDestCSys)
+	{
+		if (__TransformVariable2 != nullptr)
+		{
+			return (__TransformVariable2)(hSession, srcvarname, dstvarname, hDestCSys);
 		}
 		return false;
 	}
@@ -1722,6 +1844,33 @@ public:
 		Ellis::DPNT dpnt; dpnt.x = dpnt.y = 0;
 		return dpnt;
 	}
+	Ellis::DPNT GetFirstPoint(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, EFALHANDLE hCSys)
+	{
+		if (__GetFirstPointCursor2 != nullptr)
+		{
+			return (__GetFirstPointCursor2)(hSession, hCursor, columnNbr, hCSys);
+		}
+		Ellis::DPNT dpnt; dpnt.x = dpnt.y = 0;
+		return dpnt;
+	}
+	Ellis::DPNT GetLastPoint(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, EFALHANDLE hCSys)
+	{
+		if (__GetLastPointCursor2 != nullptr)
+		{
+			return (__GetLastPointCursor2)(hSession, hCursor, columnNbr, hCSys);
+		}
+		Ellis::DPNT dpnt; dpnt.x = dpnt.y = 0;
+		return dpnt;
+	}
+	Ellis::DPNT PointAtDistance(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, EFALHANDLE hCSys, double dDistFromBeginning, Ellis::MIUNIT unit, Ellis::DIST_CALC_TYPE calculationType)
+	{
+		if (__PointAtDistanceCursor2 != nullptr)
+		{
+			return (__PointAtDistanceCursor2)(hSession, hCursor, columnNbr, hCSys, dDistFromBeginning, unit, calculationType);
+		}
+		Ellis::DPNT dpnt; dpnt.x = dpnt.y = 0;
+		return dpnt;
+	}
 	bool Buffer(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, double distance, Ellis::MIUNIT unit, Ellis::DIST_CALC_TYPE calculationType, MI_UINT32 resolution, const wchar_t * dstvarname)
 	{
 		if (__BufferCursor != nullptr)
@@ -1735,6 +1884,14 @@ public:
 		if (__TransformCursor != nullptr)
 		{
 			return (__TransformCursor)(hSession, hCursor, columnNbr, dstvarname, dstcsys);
+		}
+		return false;
+	}
+	bool Transform(EFALHANDLE hSession, EFALHANDLE hCursor, MI_UINT32 columnNbr, const wchar_t * dstvarname, EFALHANDLE hDestCSys)
+	{
+		if (__TransformCursor2 != nullptr)
+		{
+			return (__TransformCursor2)(hSession, hCursor, columnNbr, dstvarname, hDestCSys);
 		}
 		return false;
 	}
@@ -2362,7 +2519,7 @@ public:
 	}
 	long ExecuteUpdate(EFALHANDLE hSession, EFALHANDLE hStmt)
 	{
-		if (__ExecuteUpdate!= nullptr)
+		if (__ExecuteUpdate != nullptr)
 		{
 			return (__ExecuteUpdate)(hSession, hStmt);
 		}
@@ -2775,6 +2932,14 @@ public:
 		}
 		return false;
 	}
+	bool SetVariableValueStyleObject(EFALHANDLE hSession, const wchar_t * name, EFALSTYLE value)
+	{
+		if (__SetVariableValueStyleObject != nullptr)
+		{
+			return (__SetVariableValueStyleObject)(hSession, name, value);
+		}
+		return false;
+	}
 	bool SetVariableValueBinary(EFALHANDLE hSession, const wchar_t * name, MI_UINT32 nbytes, const char * value)
 	{
 		if (__SetVariableValueBinary != nullptr)
@@ -2788,6 +2953,14 @@ public:
 		if (__SetVariableValueGeometry != nullptr)
 		{
 			return (__SetVariableValueGeometry)(hSession, name, nbytes, value, szcsys);
+		}
+		return false;
+	}
+	bool SetVariableValueGeometryEx(EFALHANDLE hSession, const wchar_t * name, MI_UINT32 nbytes, const char * value, EFALHANDLE hCoordSys, bool calculateCentroid, bool calculateWithin)
+	{
+		if (__SetVariableValueGeometryEx != nullptr)
+		{
+			return (__SetVariableValueGeometryEx)(hSession, name, nbytes, value, hCoordSys, calculateCentroid, calculateWithin);
 		}
 		return false;
 	}

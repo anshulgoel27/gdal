@@ -1067,6 +1067,7 @@ CPLString OGREFALLayer::MapBasicStyle2OGRStyle(const wchar_t * mbStyle)
     }
     return nullptr;
 }
+
 /************************************************************************/
 /*                      OGRStyle2MapBasicStyle()                        */
 /************************************************************************/

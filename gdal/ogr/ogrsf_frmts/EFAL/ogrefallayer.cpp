@@ -38,13 +38,14 @@ OGREFALLayer::OGREFALLayer(EFALHANDLE argSession, EFALHANDLE argTable, EfalOpenM
     hSequentialCursor(0),
     hPreparedInsertStmt(0),
     hPreparedUpdateStmt(0),
+    hTableCSys(0),
     poFeatureDefn(nullptr),
     pszTableCSys(nullptr),
     bHasFieldNames(false),
     efalOpenMode(eEfalOpenMode),
     bNew(FALSE),
     bNeedEndAccess(FALSE),
-    bCreateNativeX(FALSE),
+    bCreateNativeX(true),
     nBlockSize(16384),
     charset(Ellis::MICHARSET::CHARSET_WLATIN1),
     bHasBounds(FALSE),
@@ -55,7 +56,8 @@ OGREFALLayer::OGREFALLayer(EFALHANDLE argSession, EFALHANDLE argTable, EfalOpenM
     bInWriteMode(FALSE),
     nLastFID(-1),
     bHasMap(false),
-    pSpatialReference(nullptr)
+    pSpatialReference(nullptr),
+    bFinishGeometry(true)
 {
     /*-------------------------------------------------------------
     * Do initial setup of feature definition.
@@ -158,6 +160,7 @@ OGREFALLayer::OGREFALLayer(EFALHANDLE argSession, EFALHANDLE argTable, EfalOpenM
 
             poFeatureDefn->GetGeomFieldDefn(0)->SetName("OBJ");
             const wchar_t* szwCoordSys = efallib->GetColumnCSys(hSession, hTable, i);
+            hTableCSys = efallib->CoordSysStringToHandle(hSession, szwCoordSys);
             pszTableCSys = CPLRecodeFromWChar(szwCoordSys, CPL_ENC_UCS2, CPL_ENC_UTF8);
             pSpatialReference = EFALCSys2OGRSpatialRef(szwCoordSys);
             double dMinx, dMiny, dMaxx, dMaxy;
@@ -195,12 +198,13 @@ OGREFALLayer::OGREFALLayer(EFALHANDLE argSession, EFALHANDLE argTable, EfalOpenM
 }
 
 OGREFALLayer::OGREFALLayer(EFALHANDLE argSession, const char *pszLayerNameIn,
-    const char *pszFilenameIn, bool bNativeX, int BlockSize, Ellis::MICHARSET eCharset) :
+    const char *pszFilenameIn, bool bNativeX, int BlockSize, Ellis::MICHARSET eCharset, bool bFinishGeo) :
     hSession(argSession),
     hTable(0),
     hSequentialCursor(0),
     hPreparedInsertStmt(0),
     hPreparedUpdateStmt(0),
+    hTableCSys(0),
     poFeatureDefn(nullptr),
     pszTableCSys(nullptr),
     bHasFieldNames(false),
@@ -218,7 +222,8 @@ OGREFALLayer::OGREFALLayer(EFALHANDLE argSession, const char *pszLayerNameIn,
     bInWriteMode(true),
     nLastFID(-1),
     bHasMap(false),
-    pSpatialReference(nullptr)
+    pSpatialReference(nullptr),
+    bFinishGeometry(bFinishGeo)
 {
     pszFileName = CPLStrdup(pszFilenameIn);
     pswzFileName = CPLRecodeToWChar(pszFilenameIn, CPL_ENC_UTF8, CPL_ENC_UCS2);
@@ -261,6 +266,10 @@ OGREFALLayer::~OGREFALLayer()
 
     if (hSession > 0)
     {
+        if (hTableCSys > 0) {
+            efallib->DestroyCoordSys(hSession, hTableCSys);
+        }
+
         // Now drop all of the variables
         for (MI_UINT32 n = efallib->GetVariableCount(hSession); n > 0; n--)
         {
@@ -304,6 +313,7 @@ OGREFALLayer::~OGREFALLayer()
     hSequentialCursor = 0;
     hPreparedInsertStmt = 0;
     hPreparedUpdateStmt = 0;
+    hTableCSys = 0;
     hTable = 0;
     OGREFALReleaseSession(hSession);
     hSession = 0;
@@ -933,6 +943,7 @@ OGRErr OGREFALLayer::ISetFeature(OGRFeature *poFeature)
             command += varname;
         }
     }
+    
     const char * ogrStyleString = poFeature->GetStyleString(); // may be nullptr
     if (ogrStyleString != nullptr)
     {
@@ -1087,6 +1098,9 @@ OGRErr OGREFALLayer::CreateInsertStatement(EFALHANDLE hMetadata)
     {
         if (hMetadata > 0) {
             const wchar_t * efalCSys = OGRSpatialRef2EFALCSys(GetSpatialRef());
+            if (hTableCSys == 0) {
+                hTableCSys = efallib->CoordSysStringToHandle(hSession, efalCSys);
+            }
             efallib->AddColumn(hSession, hMetadata, L"OBJ", Ellis::ALLTYPE_TYPE::OT_OBJECT, false, 0, 0, efalCSys);
         }
         efallib->CreateVariable(hSession, L"@geom");
@@ -1313,20 +1327,31 @@ OGRErr OGREFALLayer::ICreateFeature(OGRFeature *poFeature)
         else
         {
             const wchar_t * warname = L"@geom";
-            const wchar_t * pszwCSys = OGRSpatialRef2EFALCSys(GetSpatialRef());
-            if (pszwCSys == nullptr) {
-                for (MI_UINT32 i = 0; i < efallib->GetColumnCount(hSession, hTable); i++)
-                {
-                    Ellis::ALLTYPE_TYPE atType = efallib->GetColumnType(hSession, hTable, i);
-                    if (atType == Ellis::ALLTYPE_TYPE::OT_OBJECT) {
-                        pszwCSys = efallib->GetColumnCSys(hSession, hTable, i);
+            if (hTableCSys > 0) {
+                efallib->SetVariableValueGeometryEx(hSession, warname, (MI_UINT32)sz, (const char *)bytes, hTableCSys, false, bFinishGeometry);
+            }
+            else {
+                const wchar_t * pszwCSys = OGRSpatialRef2EFALCSys(GetSpatialRef());
+                if (pszwCSys == nullptr) {
+                    for (MI_UINT32 i = 0; i < efallib->GetColumnCount(hSession, hTable); i++)
+                    {
+                        Ellis::ALLTYPE_TYPE atType = efallib->GetColumnType(hSession, hTable, i);
+                        if (atType == Ellis::ALLTYPE_TYPE::OT_OBJECT) {
+                            pszwCSys = efallib->GetColumnCSys(hSession, hTable, i);
+                        }
                     }
                 }
+                efallib->SetVariableValueGeometry(hSession, warname, (MI_UINT32)sz, (const char *)bytes, pszwCSys);
             }
-            efallib->SetVariableValueGeometry(hSession, warname, (MI_UINT32)sz, (const char *)bytes, pszwCSys);
         }
     }
     const char * ogrStyleString = poFeature->GetStyleString(); // may be nullptr
+    EFALSTYLE defaultStyle;
+    defaultStyle.type = EFALSTYLETYPE::SYMBOL;
+    defaultStyle.symbolStyle.symbolType = EFALSYMBOLTYPE::VECTORSYMBOL;
+    defaultStyle.symbolStyle.vectorSymbol.symbolCode = 35;
+    defaultStyle.symbolStyle.vectorSymbol.pointSize = 12;
+    defaultStyle.symbolStyle.vectorSymbol.color = 0;
     if (ogrStyleString != nullptr)
     {
         const wchar_t * warname = L"@style";
@@ -1334,7 +1359,7 @@ OGRErr OGREFALLayer::ICreateFeature(OGRFeature *poFeature)
         if (mbStyleString == nullptr || strlen(mbStyleString) == 0)
         {
             // Just because we failed to parse an OGR style into a MapBasic style, we won't fail the operation, just allow it to default to the Ellis default values.
-            efallib->SetVariableValueStyle(hSession, warname, L"Symbol (35,0,12)");
+            efallib->SetVariableValueStyleObject(hSession, warname, defaultStyle);
         }
         else
         {
@@ -1345,7 +1370,7 @@ OGRErr OGREFALLayer::ICreateFeature(OGRFeature *poFeature)
     }
     else
     {
-        efallib->SetVariableValueStyle(hSession, L"@style", L"Symbol (35,0,12)");
+        efallib->SetVariableValueStyleObject(hSession, L"@style", defaultStyle);
     }
 
     if (err == OGRERR_NONE)
