@@ -22,6 +22,9 @@ PLUGIN_SO	= ogr_EFAL.so
 
 plugin:	 $(PLUGIN_SO)
 
+plugin-install: 
+		cp -f $(PLUGIN_SO) $(DESTDIR)$(INST_LIB)/gdalplugins
+		
 $(PLUGIN_SO):	$(OBJ)
 		gcc -shared $(LNK_FLAGS) $(OBJ) $(CONFIG_LIBS_INS) $(LIBS) \
 		-o $(PLUGIN_SO)
