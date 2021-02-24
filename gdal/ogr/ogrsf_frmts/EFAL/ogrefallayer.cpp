@@ -105,20 +105,17 @@ OGREFALLayer::OGREFALLayer(EFALHANDLE argSession, EFALHANDLE argTable, EfalOpenM
             break;
         case Ellis::ALLTYPE_TYPE::OT_SMALLINT:
             poFieldDefn = new OGRFieldDefn(pszAlias, OFTInteger);
-            // if (efallib->GetColumnWidth(hSession, hTable, i) > 0)
-                // poFieldDefn->SetWidth(efallib->GetColumnWidth(hSession, hTable, i));
+            poFieldDefn->SetSubType(OGRFieldSubType::OFSTInt16);
             break;
         case Ellis::ALLTYPE_TYPE::OT_INTEGER:
             poFieldDefn = new OGRFieldDefn(pszAlias, OFTInteger);
-            // if (efallib->GetColumnWidth(hSession, hTable, i) > 0)
-                // poFieldDefn->SetWidth(efallib->GetColumnWidth(hSession, hTable, i));
             break;
         case Ellis::ALLTYPE_TYPE::OT_INTEGER64:
             poFieldDefn = new OGRFieldDefn(pszAlias, OFTInteger64);
             break;
         case Ellis::ALLTYPE_TYPE::OT_LOGICAL:
-            poFieldDefn = new OGRFieldDefn(pszAlias, OFTString);
-            poFieldDefn->SetWidth(1);
+            poFieldDefn = new OGRFieldDefn(pszAlias, OFTInteger);
+            poFieldDefn->SetSubType(OGRFieldSubType::OFSTBoolean);
             break;
         case Ellis::ALLTYPE_TYPE::OT_DATE:
             poFieldDefn = new OGRFieldDefn(pszAlias, OFTDate);
@@ -652,7 +649,7 @@ OGRFeature* OGREFALLayer::Cursor2Feature(EFALHANDLE hCursor, OGRFeatureDefn* pFe
                     pFeature->SetField(idxFeature, (GIntBig)efallib->GetCursorValueInt64(hSession, hCursor, i));
                     break;
                 case Ellis::ALLTYPE_TYPE::OT_LOGICAL:
-                    pFeature->SetField(idxFeature, (efallib->GetCursorValueBoolean(hSession, hCursor, i) ? "T" : "F"));
+                    pFeature->SetField(idxFeature, (efallib->GetCursorValueBoolean(hSession, hCursor, i) ? 1 : 0));
                     break;
                 case Ellis::ALLTYPE_TYPE::OT_DATE:
                 {
@@ -774,7 +771,10 @@ OGRErr OGREFALLayer::ISetFeature(OGRFeature *poFeature)
             wchar_t warname[32];
             swprintf(warname, sizeof(warname) / sizeof(wchar_t), L"@%d", i);
             char * varname = CPLRecodeFromWChar(warname, CPL_ENC_UCS2, CPL_ENC_UTF8);
-            switch (poFeature->GetFieldDefnRef(i)->GetType())
+            auto fieldDef = poFeature->GetFieldDefnRef(i);
+            auto fieldType = fieldDef->GetType();
+            auto fieldSubType = fieldDef->GetSubType();
+            switch (fieldType)
             {
             case OGRFieldType::OFTString:
             {
@@ -797,7 +797,15 @@ OGRErr OGREFALLayer::ISetFeature(OGRFeature *poFeature)
             {
                 efallib->CreateVariable(hSession, warname);
                 int value = poFeature->GetFieldAsInteger(i);
-                efallib->SetVariableValueInt32(hSession, warname, value);
+                if (fieldSubType == OGRFieldSubType::OFSTInt16) {
+                    efallib->SetVariableValueInt16(hSession, warname, (MI_INT16)value);
+                }
+                else if (fieldSubType == OGRFieldSubType::OFSTBoolean) {
+                    efallib->SetVariableValueBoolean(hSession, warname, value == 0 ? false : true);
+                }
+                else {
+                    efallib->SetVariableValueInt32(hSession, warname, value);
+                }
                 if (!first)
                 {
                     command += ",";
@@ -1012,6 +1020,7 @@ OGRErr OGREFALLayer::CreateInsertStatement(EFALHANDLE hMetadata)
             OGRFieldDefn* pFieldDefn = poFeatureDefn->GetFieldDefn(i);
             wchar_t * columnName = CPLRecodeToWChar(pFieldDefn->GetNameRef(), CPL_ENC_UTF8, CPL_ENC_UCS2); // TODO: Is UCS2 the right thing throughout here or is UTF16 better???
             OGRFieldType ogrType = pFieldDefn->GetType();
+            OGRFieldSubType ogrSubType = pFieldDefn->GetSubType();
             MI_UINT32 columnWidth = 0;
             MI_UINT32 columnDecimals = 0;
             Ellis::ALLTYPE_TYPE columnType = Ellis::ALLTYPE_TYPE::OT_NONE;
@@ -1023,7 +1032,17 @@ OGRErr OGREFALLayer::CreateInsertStatement(EFALHANDLE hMetadata)
                 columnWidth = pFieldDefn->GetWidth();
                 break;
             case OGRFieldType::OFTInteger:
-                columnType = Ellis::ALLTYPE_TYPE::OT_INTEGER;
+                {
+                    if (ogrSubType == OGRFieldSubType::OFSTInt16) {
+                        columnType = Ellis::ALLTYPE_TYPE::OT_SMALLINT;
+                    }
+                    else if (ogrSubType == OGRFieldSubType::OFSTBoolean) {
+                        columnType = Ellis::ALLTYPE_TYPE::OT_LOGICAL;
+                    }
+                    else {
+                        columnType = Ellis::ALLTYPE_TYPE::OT_INTEGER;
+                    }
+                }
                 break;
             case OGRFieldType::OFTInteger64:
                 if (bCreateNativeX)
@@ -1235,7 +1254,10 @@ OGRErr OGREFALLayer::ICreateFeature(OGRFeature *poFeature)
         }
         else
         {
-            switch (poFeature->GetFieldDefnRef(i)->GetType())
+            auto fieldDef = poFeature->GetFieldDefnRef(i);
+            auto fieldType = fieldDef->GetType();
+            auto fieldSubType = fieldDef->GetSubType();
+            switch (fieldType)
             {
             case OGRFieldType::OFTString:
             {
@@ -1248,7 +1270,15 @@ OGRErr OGREFALLayer::ICreateFeature(OGRFeature *poFeature)
             case OGRFieldType::OFTInteger:
             {
                 int value = poFeature->GetFieldAsInteger(i);
-                efallib->SetVariableValueInt32(hSession, warname, value);
+                if (fieldSubType == OGRFieldSubType::OFSTInt16) {
+                    efallib->SetVariableValueInt16(hSession, warname, (MI_INT16)value);
+                }
+                else if (fieldSubType == OGRFieldSubType::OFSTBoolean) {
+                    efallib->SetVariableValueBoolean(hSession, warname, value == 0 ? false : true);
+                }
+                else {
+                    efallib->SetVariableValueInt32(hSession, warname, value);
+                }
             }
             break;
             case OGRFieldType::OFTInteger64:
@@ -1567,9 +1597,17 @@ int OGREFALLayer::GetTABType(OGRFieldDefn *poField,
 
     if (poField->GetType() == OFTInteger)
     {
-        eTABType = Ellis::ALLTYPE_TYPE::OT_INTEGER;
-        // if (nWidth == 0)
-            // nWidth = 12;
+        auto fieldSubType = poField->GetSubType();
+
+        if (fieldSubType == OGRFieldSubType::OFSTInt16) {
+            eTABType = Ellis::ALLTYPE_TYPE::OT_SMALLINT;
+        }
+        else if (fieldSubType == OGRFieldSubType::OFSTBoolean) {
+            eTABType = Ellis::ALLTYPE_TYPE::OT_LOGICAL;
+        }
+        else {
+            eTABType = Ellis::ALLTYPE_TYPE::OT_INTEGER;
+        }
     }
     else if (poField->GetType() == OFTInteger64)
     {
@@ -1581,8 +1619,6 @@ int OGREFALLayer::GetTABType(OGRFieldDefn *poField,
         {
             eTABType = Ellis::ALLTYPE_TYPE::OT_INTEGER;
         }
-        // if (nWidth == 0)
-            // nWidth = 12;
     }
     else if (poField->GetType() == OFTReal)
     {
@@ -1765,14 +1801,6 @@ OGRErr OGREFALLayer::CreateField(OGRFieldDefn *poNewField, int bApproxOK)
         *------------------------------------------------*/
         poFieldDefn = new OGRFieldDefn(szNewFieldName, OFTInteger64);
         break;
-    case Ellis::ALLTYPE_TYPE::OT_SMALLINT:
-        /*-------------------------------------------------
-        * SMALLINT type
-        *------------------------------------------------*/
-        poFieldDefn = new OGRFieldDefn(szNewFieldName, OFTInteger);
-        // if (nWidth <= 5)
-            // poFieldDefn->SetWidth(nWidth);
-        break;
     case Ellis::ALLTYPE_TYPE::OT_DECIMAL:
         /*-------------------------------------------------
         * DECIMAL type
@@ -1812,11 +1840,12 @@ OGRErr OGREFALLayer::CreateField(OGRFieldDefn *poNewField, int bApproxOK)
         //TODO? m_nVersion = std::max(m_nVersion, 900);
         break;
     case Ellis::ALLTYPE_TYPE::OT_LOGICAL:
-        /*-------------------------------------------------
-        * LOGICAL type (value "T" or "F")
-        *------------------------------------------------*/
-        poFieldDefn = new OGRFieldDefn(szNewFieldName, OFTString);
-        poFieldDefn->SetWidth(1);
+        poFieldDefn = new OGRFieldDefn(szNewFieldName, OFTInteger);
+        poFieldDefn->SetSubType(OGRFieldSubType::OFSTBoolean);
+        break;
+    case Ellis::ALLTYPE_TYPE::OT_SMALLINT:
+        poFieldDefn = new OGRFieldDefn(szNewFieldName, OFTInteger);
+        poFieldDefn->SetSubType(OGRFieldSubType::OFSTInt16);
         break;
     default:
         CPLError(CE_Failure, CPLE_NotSupported,
