@@ -240,8 +240,8 @@ void RegisterOGREFAL()
          "READ-ONLY - open for read-only, "
          "LOCK-READ - open for read-only with files locked open (which will improve read performance but prevent writes from other threads/applications), "
          "READ-WRITE - open for read and write, "
-         "LOCK-WRITE - open for read and write with the files locked for writing."
-         "'default='READ-WRITE'/>"
+         "LOCK-WRITE - open for read and write with the files locked for writing.' "
+         "default='READ-WRITE'/>"
          "</OpenOptionList>");
     poDriver->SetMetadataItem(GDAL_DMD_CREATIONFIELDDATATYPES,
         "Integer Integer64 Real String Date DateTime Time");
