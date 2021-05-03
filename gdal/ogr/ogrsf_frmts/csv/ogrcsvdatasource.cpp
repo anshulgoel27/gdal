@@ -942,11 +942,13 @@ OGRCSVDataSource::ICreateLayer( const char *pszLayerName,
             chDelimiter = '\t';
         else if (EQUAL(pszDelimiter, "SPACE"))
             chDelimiter = ' ';
+        else if (EQUAL(pszDelimiter, "PIPE"))
+            chDelimiter = '|';
         else
         {
             CPLError(CE_Warning, CPLE_AppDefined,
                      "SEPARATOR=%s not understood, use one of "
-                     "COMMA, SEMICOLON, SPACE or TAB.",
+                     "COMMA, SEMICOLON, SPACE, TAB or PIPE.",
                      pszDelimiter);
         }
     }

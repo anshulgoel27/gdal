@@ -317,6 +317,7 @@ void RegisterOGRCSV()
 "    <Value>SEMICOLON</Value>"
 "    <Value>TAB</Value>"
 "    <Value>SPACE</Value>"
+"    <Value>PIPE</Value>"
 "  </Option>"
 #ifdef WIN32
 "  <Option name='LINEFORMAT' type='string-select' description='end-of-line sequence' default='CRLF'>"
